@@ -116,7 +116,7 @@ control MyIngress(
 
     apply {
         ingress_port_forward.apply();
-        
+        send_flag.write(0, 10);   // 索引只有 0 可用
 
         if(ig_intr_md.ingress_port==140){
             bit<32> total_packet;
