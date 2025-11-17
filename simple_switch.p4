@@ -80,18 +80,20 @@ control MyIngress(
                   inout ingress_intrinsic_metadata_for_deparser_t ig_dprsr_md,
                   inout ingress_intrinsic_metadata_for_tm_t ig_tm_md) {
 
-    /* 把要出去的 port 寫到 TM metadata */
     action set_out_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
+        if(port==140){
+                    send_multicast(1, 1);      
+
+        }      
+
     }
 
-    /* 如果你還要做 multicast，可以留這個 */
     action send_multicast(bit<16> grp_id, bit<16> rid) {
         ig_tm_md.mcast_grp_a = grp_id;
         ig_tm_md.rid = rid;
     }
 
-    /* 這張表：用 ingress port 當 key，決定要轉去哪個 port */
     table ingress_port_forward {
         key = {
             ig_intr_md.ingress_port : exact;
@@ -192,7 +194,6 @@ control MyEgress(
     }
 
     apply {
-        /* egress 目前沒特別做什麼 */
     }
 }
 
