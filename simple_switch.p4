@@ -98,8 +98,8 @@ control MyIngress(
         }
     };
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) peek_pkts = {
-        void apply(inout bit<32> v) { 
-            v = v; // 讀取資料
+        void apply(inout bit<32> v, out bit<32> outv) { 
+            outv = v; // 讀取資料
         }
     };
 
@@ -131,7 +131,7 @@ control MyIngress(
 
         // 讀取當前封包數
         bit<32> cur_pkts;
-        peek_pkts.execute(idx, cur_pkts);  // 使用 peek_pkts 來讀取數據
+        cur_pkts = peek_pkts.execute(idx);  // 使用 peek_pkts 來讀取數據
 
         if (cur_pkts == 1024) {
             if (ig_intr_md.ingress_port == 140) {
