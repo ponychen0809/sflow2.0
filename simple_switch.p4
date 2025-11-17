@@ -110,6 +110,17 @@ control MyIngress(
                 new_val = v; 
             }
     };
+    RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) 
+        read_pkt = {
+            void apply(inout bit<32> v, out bit<32> new_val) {
+                if (v == 999){
+                    v = 0;
+                }else{
+                    v       = v + 1;
+                }
+                new_val = v; 
+            }
+    };
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) peek_pkts = {
         void apply(inout bit<32> v, out bit<32> outv) { 
             outv = v; // 讀取資料
@@ -142,8 +153,8 @@ control MyIngress(
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
         if (ig_intr_md.ingress_port == 140) { 
-            pkt_count = inc_pkt.read(130);
-            if(pkt_count==1){
+            pkt_count = read_pkt.execute(130);
+            if(pkt_count==0){
                 ig_tm_md.mcast_grp_a = 1; 
                 ig_tm_md.rid = 1;
             }
