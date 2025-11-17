@@ -80,6 +80,12 @@ control MyIngress(
                   inout ingress_intrinsic_metadata_for_deparser_t ig_dprsr_md,
                   inout ingress_intrinsic_metadata_for_tm_t ig_tm_md) {
 
+   
+
+    action send_multicast(bit<16> grp_id, bit<16> rid) {
+        ig_tm_md.mcast_grp_a = grp_id;
+        ig_tm_md.rid = rid;
+    }
     action set_out_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
         if(port==140){
@@ -87,11 +93,6 @@ control MyIngress(
 
         }      
 
-    }
-
-    action send_multicast(bit<16> grp_id, bit<16> rid) {
-        ig_tm_md.mcast_grp_a = grp_id;
-        ig_tm_md.rid = rid;
     }
 
     table ingress_port_forward {
