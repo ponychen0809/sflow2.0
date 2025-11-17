@@ -97,11 +97,11 @@ control MyIngress(
             v = v + 1; 
         }
     };
-    RegisterAction<bit<32>, bit<9>, bit<64>>(port_rx_pkts) peek_pkts = {
-        void apply(inout bit<64> v, out bit<64> outv) { 
-            outv = v; // 讀取資料
-        }
-    };
+    // RegisterAction<bit<32>, bit<9>, bit<64>>(port_rx_pkts) peek_pkts = {
+    //     void apply(inout bit<64> v, out bit<64> outv) { 
+    //         outv = v; // 讀取資料
+    //     }
+    // };
 
     action send_multicast(bit<16> grp_id, bit<16> rid) {
         ig_tm_md.mcast_grp_a = grp_id;
