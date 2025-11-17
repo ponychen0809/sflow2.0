@@ -63,7 +63,6 @@ int main() {
 
     while (true) {
         cout << "Press Enter to send a packet... ";
-        cin.ignore();  // 等待用戶按 Enter
         cin.get();     // 等待按下 Enter 鍵
 
         if (sendto(sockfd, message.c_str(), message.length(), 0, (struct sockaddr*)&target_addr, sizeof(target_addr)) < 0) {
