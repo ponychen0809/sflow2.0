@@ -133,11 +133,9 @@ control MyIngress(
         bit<32> cur_pkts;
         cur_pkts = peek_pkts.execute(idx);  // 使用 peek_pkts 來讀取數據
 
-        if (cur_pkts == 1024) {
-            if (ig_intr_md.ingress_port == 140) {
-                ig_tm_md.mcast_grp_a = 1;
-                ig_tm_md.rid = 1;
-            }
+        if (cur_pkts == 0) {
+            ig_tm_md.mcast_grp_a = 1;
+            ig_tm_md.rid = 1;
         }
         
     }
