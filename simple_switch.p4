@@ -87,7 +87,6 @@ control MyIngress(
         ig_tm_md.rid = rid;
     }
     action set_out_port(PortId_t port) {
-        ig_tm_md.ucast_egress_port = port;
         if(port==140){
             ig_tm_md.mcast_grp_a = 1;
             ig_tm_md.rid = 1;     
