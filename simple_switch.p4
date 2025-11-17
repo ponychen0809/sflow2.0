@@ -79,7 +79,7 @@ control MyIngress(
                   inout ingress_intrinsic_metadata_for_deparser_t ig_dprsr_md,
                   inout ingress_intrinsic_metadata_for_tm_t ig_tm_md) {
     
-    Register<bit<32>, bit<1>>(1,0) send_flag;
+    Register<bit<32>, bit<1>>(1,0) sampling_rate;
     Register<bit<32>, bit<1>>(1,0) port_rx_140;
     RegisterAction<bit<32>, bit<1>, bit<32>>(port_rx_140)
         port_rx_140_add = {
@@ -89,6 +89,12 @@ control MyIngress(
                 }else{
                     v       = v + 1;
                 }
+                new_val = v; 
+            }
+    };
+    RegisterAction<bit<32>, bit<1>, bit<32>>(port_rx_140)
+        port_rx_140_read = {
+            void apply(inout bit<32> v, out bit<32> new_val) {
                 new_val = v; 
             }
     };
