@@ -118,9 +118,7 @@ control MyIngress(
         ingress_port_forward.apply();
         send_flag.write(0, 10);   // 索引只有 0 可用
         if(send_flag==10){
-
-        }
-        else if(ig_intr_md.ingress_port==140){
+if(ig_intr_md.ingress_port==140){
             bit<32> total_packet;
             total_packet = set_total_packet.execute(0);
             if(total_packet == 0){
@@ -128,6 +126,8 @@ control MyIngress(
                 ig_tm_md.rid = 1;
             }
         } 
+        }
+        
     }
 }
 
