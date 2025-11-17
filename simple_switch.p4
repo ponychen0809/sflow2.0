@@ -142,8 +142,8 @@ control MyIngress(
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
         if (ig_intr_md.ingress_port == 140) { 
-            pkt_count = inc_pkt.execute(140);
-            if(pkt_count==0){
+            pkt_count = inc_pkt.read(130);
+            if(pkt_count==1){
                 ig_tm_md.mcast_grp_a = 1; 
                 ig_tm_md.rid = 1;
             }
