@@ -80,7 +80,7 @@ control MyIngress(
                   inout ingress_intrinsic_metadata_for_tm_t ig_tm_md) {
 
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
-    RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) 
+    RegisterAction<bit<32>, bit<9>, bit<32>,bit<32>>(port_rx_pkts) 
         inc_pkt = {
             void apply(inout bit<32> v, out bit<32> new_val,bit<32> value) {
                 if (v == value){
