@@ -98,8 +98,8 @@ control MyIngress(
         }
     };
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) peek_pkts = {
-        void apply(inout bit<32> v, out bit<32> outv) { 
-            outv = v; // 讀取資料
+        void apply(inout bit<32> v) { 
+            v = v; // 讀取資料
         }
     };
 
