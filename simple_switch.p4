@@ -127,7 +127,7 @@ control MyIngress(
     apply {
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
-        inc_pkt.execute(140);
+        inc_pkt.execute(0);
 
         // 讀取當前封包數
         bit<32> cur_pkts;
