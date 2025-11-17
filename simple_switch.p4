@@ -124,10 +124,10 @@ control MyIngress(
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
         if(idx == 140){
-                    hdr.sample.sampling_rate=100;
+                    hdr.sample.sampling_rate=99;
 
-        }else if(idx == 143){
-                    hdr.sample.sampling_rate=50;
+        }else if(idx == 142){
+                    hdr.sample.sampling_rate=49;
 
         }
         pkt_count = inc_pkt.execute(idx);
