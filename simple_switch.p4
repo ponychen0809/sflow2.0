@@ -130,15 +130,15 @@ control MyIngress(
         inc_pkt.execute(idx);
 
         // 讀取當前封包數
-        bit<64> cur_pkts;
-        peek_pkts.execute(idx, cur_pkts);  // 使用 peek_pkts 來讀取數據
+        // bit<64> cur_pkts;
+        // peek_pkts.execute(idx, cur_pkts);  // 使用 peek_pkts 來讀取數據
 
-        if (cur_pkts == 1024) {
-            if (ig_intr_md.ingress_port == 140) {
-                ig_tm_md.mcast_grp_a = 1;
-                ig_tm_md.rid = 1;
-            }
-        }
+        // if (cur_pkts == 1024) {
+        //     if (ig_intr_md.ingress_port == 140) {
+        //         ig_tm_md.mcast_grp_a = 1;
+        //         ig_tm_md.rid = 1;
+        //     }
+        // }
         
     }
 }
