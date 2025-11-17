@@ -91,6 +91,13 @@ control MyIngress(
             }
     };
     Register<bit<32>, bit<1>>(1,0) send_flag;
+    Register<bit<32>,bit<1>>(1, 0) reg_ingress_port_1;
+    RegisterAction<bit<32>, bit<1>, bit<32>>(reg_ingress_port_1) reg_ingress_port_1_action_read_set = {
+        void apply(inout bit<32> register_val, out bit<32> read_val) {
+            read_val = register_val;
+            register_val = (bit<32>)ig_intr_md.ingress_port;
+        }
+    };
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) inc_pkt = {
         void apply(inout bit<32> v) { 
@@ -128,6 +135,8 @@ control MyIngress(
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         inc_pkt.execute(0);
+        bit<32> test;
+        test = reg_ingress_port_1_action_read_set.execute(0);
 
         // 讀取當前封包數
         bit<32> cur_pkts;
