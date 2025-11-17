@@ -129,7 +129,7 @@ control MyIngress(
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_value = 0; 
-        reset_pkt.execute(idx,pkt_value);
+        // reset_pkt.execute(idx,pkt_value);
 
         bit<32> pkt_count;
         pkt_count = inc_pkt.execute(idx);
