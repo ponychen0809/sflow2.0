@@ -78,9 +78,11 @@ control MyIngress(
                   in ingress_intrinsic_metadata_from_parser_t ig_prsr_md,
                   inout ingress_intrinsic_metadata_for_deparser_t ig_dprsr_md,
                   inout ingress_intrinsic_metadata_for_tm_t ig_tm_md) {
-    Register<bit<32>, bit<1>>(1,0) total_packets_reg;
-    RegisterAction<bit<32>, bit<1>, bit<32>>(total_packets_reg)
-        set_total_packet = {
+    
+    Register<bit<32>, bit<1>>(1,0) send_flag;
+    Register<bit<32>, bit<1>>(1,0) port_rx_140;
+    RegisterAction<bit<32>, bit<1>, bit<32>>(port_rx_140)
+        port_rx_140_add = {
             void apply(inout bit<32> v, out bit<32> new_val) {
                 if (v == 999){
                     v = 0;
@@ -89,14 +91,6 @@ control MyIngress(
                 }
                 new_val = v; 
             }
-    };
-    Register<bit<32>, bit<1>>(1,0) send_flag;
-    Register<bit<32>,bit<1>>(1, 0) reg_ingress_port_1;
-    RegisterAction<bit<32>, bit<1>, bit<32>>(reg_ingress_port_1) reg_ingress_port_1_action_read_set = {
-        void apply(inout bit<32> register_val, out bit<32> read_val) {
-            read_val = register_val;
-            register_val = (bit<32>)ig_intr_md.ingress_port;
-        }
     };
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) inc_pkt = {
@@ -134,20 +128,16 @@ control MyIngress(
     apply {
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
-        inc_pkt.execute(0);
-        bit<32> test;
-        test = reg_ingress_port_1_action_read_set.execute(0);
-
-        // 讀取當前封包數
-        bit<32> cur_pkts;
-        cur_pkts = peek_pkts.execute(idx);  // 使用 peek_pkts 來讀取數據
-
-        if (cur_pkts == 1) {
-            if (ig_intr_md.ingress_port == 140) { 
+        bit<32> pkt_count;
+        if (ig_intr_md.ingress_port == 140) { 
+            pkt_count = port_rx_140_add.execute(0);
+            if(pkt_count==0){
                 ig_tm_md.mcast_grp_a = 1; 
-                ig_tm_md.rid = 1; 
+                ig_tm_md.rid = 1;
             }
+             
         }
+        
         
     }
 }
