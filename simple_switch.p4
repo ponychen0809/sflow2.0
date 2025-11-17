@@ -78,27 +78,7 @@ control MyIngress(
                   in ingress_intrinsic_metadata_from_parser_t ig_prsr_md,
                   inout ingress_intrinsic_metadata_for_deparser_t ig_dprsr_md,
                   inout ingress_intrinsic_metadata_for_tm_t ig_tm_md) {
-    
-    Register<bit<32>, bit<1>>(1,0) sampling_rate;
-    Register<bit<32>, bit<1>>(1,0) port_rx_140;
-    RegisterAction<bit<32>, bit<1>, bit<32>>(port_rx_140)
-        port_rx_140_add = {
-            void apply(inout bit<32> v, out bit<32> new_val) {
-                if (v == 999){
-                    v = 0;
-                }else{
-                    v       = v + 1;
-                }
-                new_val = v; 
-            }
-    };
-    RegisterAction<bit<32>, bit<1>, bit<32>>(port_rx_140)
-        port_rx_140_read = {
-            void apply(inout bit<32> v, out bit<32> new_val) {
-                new_val = v; 
-            }
-    };
-    
+
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) 
         inc_pkt = {
@@ -116,11 +96,6 @@ control MyIngress(
             void apply(inout bit<32> v, out bit<32> new_val) {
                 new_val = v; 
             }
-    };
-    RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) peek_pkts = {
-        void apply(inout bit<32> v, out bit<32> outv) { 
-            outv = v; // 讀取資料
-        }
     };
 
     action send_multicast(bit<16> grp_id, bit<16> rid) {
@@ -148,7 +123,7 @@ control MyIngress(
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
-        pkt_count = inc_pkt.execute(idx,50);
+        pkt_count = inc_pkt.execute(idx);
         if(pkt_count==0){
             ig_tm_md.mcast_grp_a = 1; 
             ig_tm_md.rid = 1;
