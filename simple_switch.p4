@@ -91,7 +91,13 @@ control MyIngress(
             }
     };
     Register<bit<32>, bit<1>>(1,0) send_flag;
-
+    Register<bit<64>, bit<9>>(512, 0) port_rx_pkts;
+    RegisterAction<bit<64>, bit<9>>(port_rx_pkts) inc_pkt = {
+        void apply(inout bit<64> v) { v = v + 1; }
+    };
+    RegisterAction<bit<64>, bit<9>, bit<64>>(port_rx_pkts) peek_pkts = {
+        void apply(inout bit<64> v, out bit<64> outv) { outv = v; }
+    };
 
     action send_multicast(bit<16> grp_id, bit<16> rid) {
         ig_tm_md.mcast_grp_a = grp_id;
@@ -116,20 +122,15 @@ control MyIngress(
 
     apply {
         ingress_port_forward.apply();
-        bit<1>  idx0 = 0;
-        bit<32> ten  = 10;
-        bit<32> flag_val;
-        send_flag.write(idx0, ten);   // 索引只有 0 可用
-        send_flag.read(idx0, ten);
+        bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
+        inc_pkt.execute(idx);
+        bit<64> cur_pkts;
+        peek_pkts.execute(idx, cur_pkts);
 
-        if(flag_val==ten){
+        if(cur_pkts == 1024){
             if(ig_intr_md.ingress_port==140){
-                bit<32> total_packet;
-                total_packet = set_total_packet.execute(0);
-                if(total_packet == 0){
                 ig_tm_md.mcast_grp_a = 1;
                 ig_tm_md.rid = 1;
-                }
             } 
         }
         
