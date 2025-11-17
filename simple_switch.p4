@@ -128,9 +128,11 @@ control MyIngress(
     apply {
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
+        bit<32> pkt_value = 0; 
+        reset_pkt.execute(idx,pkt_value);
+
         bit<32> pkt_count;
         pkt_count = inc_pkt.execute(idx);
-        reset_pkt.execute(idx,0);
         if(pkt_count==0){
             ig_tm_md.mcast_grp_a = 1; 
             ig_tm_md.rid = 1;
