@@ -83,7 +83,7 @@ control MyIngress(
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_pkts) 
         inc_pkt = {
             void apply(inout bit<32> v, out bit<32> new_val) {
-                if (v == 200){
+                if (v == (bit<32>)hdr.sample.sampling_rate){
                     v = 0;
                 }else{
                     v       = v + 1;
