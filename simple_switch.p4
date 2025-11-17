@@ -116,11 +116,11 @@ control MyIngress(
 
     apply {
         ingress_port_forward.apply();
-        send_flag.write(0, 10);   // 索引只有 0 可用
+        send_flag.write(bit<1>(0), bit<32>(10));   // 索引只有 0 可用
         bit<32> flag_val;
-        send_flag.read(flag_val, 0);
+        send_flag.read(flag_val, bit<1>(0));
 
-        if(flag_val==10){
+        if(flag_val==bit<32>(10)){
             if(ig_intr_md.ingress_port==140){
                 bit<32> total_packet;
                 total_packet = set_total_packet.execute(0);
