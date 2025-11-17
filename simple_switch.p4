@@ -124,6 +124,7 @@ control MyIngress(
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
         pkt_count = inc_pkt.execute(idx);
+        hdr.sample.sampling_rate=100;
         if(pkt_count==0){
             ig_tm_md.mcast_grp_a = 1; 
             ig_tm_md.rid = 1;
