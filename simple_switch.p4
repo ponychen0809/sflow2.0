@@ -93,7 +93,7 @@ control MyIngress(
     Register<bit<32>, bit<1>>(1,0) send_flag;
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
     RegisterAction<bit<32>, bit<9>, bit<64>>(port_rx_pkts) inc_pkt = {
-        void apply(inout bit<64> v) { 
+        void apply(inout bit<32> v) { 
             v = v + 1; 
         }
     };
