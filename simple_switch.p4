@@ -113,11 +113,6 @@ control MyIngress(
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) 
         read_pkt = {
             void apply(inout bit<32> v, out bit<32> new_val) {
-                if (v == 999){
-                    v = 0;
-                }else{
-                    v       = v + 1;
-                }
                 new_val = v; 
             }
     };
