@@ -200,27 +200,9 @@ header sflow_t {
     bit<32> samples;
 }
 
-header sflow_sample_t {
-    bit<32> sample_type;
-    bit<32> sample_length;
-    bit<32> sample_seq_num;
-    bit<32> source_id;
+header sample_t {
     bit<32> sampling_rate;
-    bit<32> sample_pool;
-    bit<32> drops;
-    bit<32> input_if;
-    bit<32> output_if;
-    bit<32> record_count;
-    bit<32> enterprise_format;
-    bit<32> flow_length;
-    bit<32> pkt_length;
-    bit<32> protocol;
-    bit<32> src_ip;
-    bit<32> dst_ip;
-    bit<32> src_port;
-    bit<32> dst_port;
-    bit<32> tcp_flags;
-    bit<32> tos;
+
 }
 
 struct my_header_t {
@@ -230,21 +212,8 @@ struct my_header_t {
     ipv4_h          ipv4;
     tcp_h           tcp;
     udp_h           udp;
-    sflow_t         sflow_hd;
-    sflow_sample_t  sflow_sample_0;
-    sflow_sample_t  sflow_sample_1;
-    sflow_sample_t  sflow_sample_2;
-    sflow_sample_t  sflow_sample_3;
-    sflow_sample_t  sflow_sample_4;
-    sflow_sample_t  sflow_sample_5;
-
+    sample_t        sample;
 }
-
-
-
-
-
-
 struct empty_header_t {}
 
 struct empty_metadata_t {}
