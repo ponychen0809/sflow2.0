@@ -91,12 +91,6 @@ control MyIngress(
                 new_val = v; 
             }
     };
-    RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_pkts) 
-        reset_pkt = {
-            void apply(inout bit<32> v, out bit<32> new_val) {
-                v = new_val; 
-            }
-    };
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) 
         read_pkt = {
             void apply(inout bit<32> v, out bit<32> new_val) {
@@ -128,17 +122,11 @@ control MyIngress(
     apply {
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
-        bit<32> pkt_value = 0; 
-        reset_pkt.execute(idx,pkt_value);
-
-        bit<32> pkt_count;
         pkt_count = inc_pkt.execute(idx);
         if(pkt_count==0){
             ig_tm_md.mcast_grp_a = 1; 
             ig_tm_md.rid = 1;
         }
-        
-        
     }
 }
 
