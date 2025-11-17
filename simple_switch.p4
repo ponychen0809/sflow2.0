@@ -93,7 +93,7 @@ control MyIngress(
     };
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_pkts) 
         reset_pkt = {
-            void apply(inout bit<32> v, bit<32> new_val) {
+            void apply(inout bit<32> v, inout bit<32> new_val) {
                 v = new_val; 
             }
     };
