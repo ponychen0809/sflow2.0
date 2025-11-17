@@ -67,7 +67,6 @@ parser MyIngressParser(packet_in pkt,
     }
 }
 
-Register<bit<32>, bit<1>>(1,0) send_flag;
 
 /* Ingress Pipeline */
 control MyIngress(
@@ -91,6 +90,7 @@ control MyIngress(
                 new_val = v; 
             }
     };
+    Register<bit<32>, bit<1>>(1,0) send_flag;
 
 
     action send_multicast(bit<16> grp_id, bit<16> rid) {
