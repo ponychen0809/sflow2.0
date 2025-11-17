@@ -120,7 +120,7 @@ control MyIngress(
         bit<32> ten  = 10;
         bit<32> flag_val;
         send_flag.write(idx0, ten);   // 索引只有 0 可用
-        send_flag.read(flag_val, idx0);
+        send_flag.read(idx0, ten);
 
         if(flag_val==ten){
             if(ig_intr_md.ingress_port==140){
