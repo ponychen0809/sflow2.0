@@ -124,15 +124,15 @@ control MyIngress(
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         inc_pkt.execute(idx);
-        bit<64> cur_pkts;
-        peek_pkts.execute(idx, cur_pkts);
+        // bit<64> cur_pkts;
+        // peek_pkts.execute(idx, cur_pkts);
 
-        if(cur_pkts == 1024){
-            if(ig_intr_md.ingress_port==140){
-                ig_tm_md.mcast_grp_a = 1;
-                ig_tm_md.rid = 1;
-            } 
-        }
+        // if(cur_pkts == 1024){
+        //     if(ig_intr_md.ingress_port==140){
+        //         ig_tm_md.mcast_grp_a = 1;
+        //         ig_tm_md.rid = 1;
+        //     } 
+        // }
         
     }
 }
