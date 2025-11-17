@@ -92,11 +92,15 @@ control MyIngress(
     };
     Register<bit<32>, bit<1>>(1,0) send_flag;
     Register<bit<64>, bit<9>>(512, 0) port_rx_pkts;
-    RegisterAction<bit<64>, bit<9>>(port_rx_pkts) inc_pkt = {
-        void apply(inout bit<64> v) { v = v + 1; }
+    RegisterAction<bit<64>, bit<9>, bit<64>>(port_rx_pkts) inc_pkt = {
+        void apply(inout bit<64> v) { 
+            v = v + 1; 
+        }
     };
     RegisterAction<bit<64>, bit<9>, bit<64>>(port_rx_pkts) peek_pkts = {
-        void apply(inout bit<64> v, out bit<64> outv) { outv = v; }
+        void apply(inout bit<64> v, out bit<64> outv) { 
+            outv = v; // 讀取資料
+        }
     };
 
     action send_multicast(bit<16> grp_id, bit<16> rid) {
@@ -124,15 +128,17 @@ control MyIngress(
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         inc_pkt.execute(idx);
-        // bit<64> cur_pkts;
-        // peek_pkts.execute(idx, cur_pkts);
 
-        // if(cur_pkts == 1024){
-        //     if(ig_intr_md.ingress_port==140){
-        //         ig_tm_md.mcast_grp_a = 1;
-        //         ig_tm_md.rid = 1;
-        //     } 
-        // }
+        // 讀取當前封包數
+        bit<64> cur_pkts;
+        peek_pkts.execute(idx, cur_pkts);  // 使用 peek_pkts 來讀取數據
+
+        if (cur_pkts == 1024) {
+            if (ig_intr_md.ingress_port == 140) {
+                ig_tm_md.mcast_grp_a = 1;
+                ig_tm_md.rid = 1;
+            }
+        }
         
     }
 }
