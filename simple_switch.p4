@@ -88,10 +88,9 @@ control MyIngress(
     }
     action set_out_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
-        if(port==140){
-                    send_multicast(1, 1);      
-
-        }      
+        // if(port==140){
+        //     send_multicast(1, 1);      
+        // }      
 
     }
 
