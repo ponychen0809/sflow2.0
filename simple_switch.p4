@@ -93,10 +93,16 @@ control MyIngress(
             }
     };
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
-    RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) inc_pkt = {
-        void apply(inout bit<32> v) { 
-            v = v + 1; 
-        }
+    RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) 
+        inc_pkt = {
+            void apply(inout bit<32> v, out bit<32> new_val) {
+                if (v == 999){
+                    v = 0;
+                }else{
+                    v       = v + 1;
+                }
+                new_val = v; 
+            }
     };
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) peek_pkts = {
         void apply(inout bit<32> v, out bit<32> outv) { 
@@ -130,7 +136,7 @@ control MyIngress(
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
         if (ig_intr_md.ingress_port == 140) { 
-            pkt_count = port_rx_140_add.execute(0);
+            pkt_count = inc_pkt.execute(140);
             if(pkt_count==0){
                 ig_tm_md.mcast_grp_a = 1; 
                 ig_tm_md.rid = 1;
