@@ -130,6 +130,7 @@ control MyIngress(
                 ig_tm_md.mcast_grp_a = 1; 
                 ig_tm_md.rid = 1;
             }
+            
         }else if(idx == 142){
             hdr.sample.sampling_rate=49;
             pkt_count = inc_pkt.execute(idx);
