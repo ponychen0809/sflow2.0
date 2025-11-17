@@ -124,18 +124,21 @@ control MyIngress(
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
         if(idx == 140){
-                    hdr.sample.sampling_rate=99;
-
+            hdr.sample.sampling_rate=99;
+            pkt_count = inc_pkt.execute(idx);
+            if(pkt_count==0){
+                ig_tm_md.mcast_grp_a = 1; 
+                ig_tm_md.rid = 1;
+            }
         }else if(idx == 142){
-                    hdr.sample.sampling_rate=49;
-
+            hdr.sample.sampling_rate=49;
+            pkt_count = inc_pkt.execute(idx);
+            if(pkt_count==0){
+                ig_tm_md.mcast_grp_a = 1; 
+                ig_tm_md.rid = 1;
+            }
         }
-        pkt_count = inc_pkt.execute(idx);
-
-        if(pkt_count==0){
-            ig_tm_md.mcast_grp_a = 1; 
-            ig_tm_md.rid = 1;
-        }
+                
     }
 }
 
