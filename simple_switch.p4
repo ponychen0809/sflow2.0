@@ -106,8 +106,7 @@ control MyIngress(
         ig_tm_md.ucast_egress_port = port;
     }
     action set_sampling_rate(bit<32> sampling_rate) {
-        bit<32> tmp = sampling_rate -1;
-        hdr.sample.sampling_rate=tmp;
+        hdr.sample.sampling_rate=sampling_rate;
     }
 
 
