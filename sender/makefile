@@ -10,7 +10,7 @@ all: $(TARGET)
 
 # 編譯 main.cpp 生成可執行檔
 $(TARGET): sender.cpp
-	$(CXX) $(CXXFLAGS) -o $(TARGET) udp_sender.cpp
+	$(CXX) $(CXXFLAGS) -o $(TARGET) sender.cpp
 
 # 清理編譯過程中產生的檔案
 clean:
