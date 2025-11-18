@@ -83,7 +83,7 @@ control MyIngress(
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_pkts) 
         inc_pkt = {
             void apply(inout bit<32> v, out bit<32> new_val) {
-                if (v == (bit<32>)hdr.sample.sampling_rate){
+                if (v == (bit<32>)hdr.sample.sampling_rate-1){
                     v = 0;
                 }else{
                     v       = v + 1;
@@ -104,8 +104,11 @@ control MyIngress(
     }
     action set_out_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
-
     }
+    action set_sampling_rate(bit<32> sampling_rate) {
+         hdr.sample.sampling_rate=sampling_rate;
+    }
+
 
     table ingress_port_forward {
         key = {
@@ -118,27 +121,30 @@ control MyIngress(
         size = 256;
         default_action = NoAction;
     }
+    table port_sampling_rate {
+        key = {
+            ig_intr_md.ingress_port : exact;
+        }
+        actions = {
+            set_sampling_rate;
+            NoAction;
+        }
+        size = 256;
+        default_action = NoAction;
+    }
 
     apply {
         ingress_port_forward.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
-        if(idx == 140){
-            hdr.sample.sampling_rate=99;
-            pkt_count = inc_pkt.execute(idx);
-            if(pkt_count==0){
-                ig_tm_md.mcast_grp_a = 1; 
-                ig_tm_md.rid = 1;
-            }
-            
-        }else if(idx == 142){
-            hdr.sample.sampling_rate=49;
-            pkt_count = inc_pkt.execute(idx);
-            if(pkt_count==0){
-                ig_tm_md.mcast_grp_a = 1; 
-                ig_tm_md.rid = 1;
-            }
+    
+        pkt_count = inc_pkt.execute(idx);
+        if(pkt_count==0){
+            ig_tm_md.mcast_grp_a = 1; 
+            ig_tm_md.rid = 1;
         }
+            
+       
                 
     }
 }
