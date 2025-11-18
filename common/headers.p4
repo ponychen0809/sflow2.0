@@ -224,7 +224,7 @@ header sflow_sample_t {
 }
 
 header sample_t {
-    bit<32> sampling_rate;
+    bit<32>  sampling_rate;
     bit<32>  ingress_port;
 }
 
