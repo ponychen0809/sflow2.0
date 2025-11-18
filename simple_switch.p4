@@ -131,9 +131,7 @@ control MyIngress(
         hdr.sflow_hd.sub_agent_id = (bit<32>)1;
         hdr.sflow_hd.sequence_number = (bit<32>)5;
         hdr.sflow_hd.uptime = (bit<32>)12345;
-        hdr.sflow_hd.samples = (bit<32>)1;
-
-        
+        hdr.sflow_hd.samples = (bit<32>)1;  
     }
 
 
@@ -179,7 +177,7 @@ control MyIngress(
         }
         if(idx == 36){
             hdr.sample.setInvalid();
-            ig_tm_md.ucast_egress_port = 141;
+            ig_tm_md.ucast_egress_port = 142;
             set_sample_hd();
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
