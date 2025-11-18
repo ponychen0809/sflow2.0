@@ -157,7 +157,6 @@ control MyIngress(
                 hdr.sample.ingress_port = idx;
                 ig_tm_md.mcast_grp_a = 1; 
                 ig_tm_md.rid = 1;
-                meta.to_recirc = 1;
             }
         }
         if(hdr.sample.ingress_port == 140){
