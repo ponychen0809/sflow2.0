@@ -225,7 +225,7 @@ header sflow_sample_t {
 
 header sample_t {
     bit<32> sampling_rate;
-    bit<9>  ingress_port;
+    bit<32>  ingress_port;
 }
 
 struct my_header_t {
