@@ -76,7 +76,7 @@ void packetHandler(unsigned char *userData, const struct pcap_pkthdr *pkthdr, co
     // 解析 IP header
     auto* ip_hdr = (struct ip*)packet;
     int ip_hdr_len = ip_hdr->ip_hl * 4;
-    stc::cout << "============================" << std::endl;
+    std::cout << "============================" << std::endl;
     // 檢查是否是 UDP 封包
     if (ip_hdr->ip_p != IPPROTO_UDP) {
         return;
