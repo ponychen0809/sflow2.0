@@ -74,7 +74,7 @@ void displayPayload(const UDP_Payload& payload) {
 
 int main() {
     int sockfd;
-    struct sockaddr_in server_addr, client_addr;
+    struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
     char buffer[65536]; // 用於接收封包的緩衝區
 
@@ -93,20 +93,7 @@ int main() {
         return -1;
     }
 
-    // 設置監聽的端口
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(6343);  // 設定監聽端口號為12345
-
-    // 綁定套接字
-    if (bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        perror("Bind failed");
-        close(sockfd);
-        return -1;
-    }
-
-    std::cout << "Listening on port 6343, interface enp2s0..." << std::endl;
+    std::cout << "Listening on interface enp2s0, port 6343..." << std::endl;
 
     while (true) {
         ssize_t packet_len = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)&client_addr, &client_len);
@@ -117,12 +104,11 @@ int main() {
 
         // 解析 IP header
         struct ip* ip_header = (struct ip*)buffer;
-        struct udphdr* udp_header = (struct udphdr*)(buffer + (ip_header->ip_hl << 2)); // UDP header的位置
+        int ip_header_len = ip_header->ip_hl * 4;
+        struct udphdr* udp_header = (struct udphdr*)(buffer + ip_header_len);
 
         // 顯示 IP header
-        std::cout << "\n\n*** IP Header ***" << std::endl;
-        std::cout << "IP Version: " << (int)ip_header->ip_v << std::endl;
-        std::cout << "IP Header Length: " << (int)ip_header->ip_hl * 4 << " bytes" << std::endl;
+        std::cout << "\n*** IP Header ***" << std::endl;
         std::cout << "Source IP: " << inet_ntoa(ip_header->ip_src) << std::endl;
         std::cout << "Destination IP: " << inet_ntoa(ip_header->ip_dst) << std::endl;
 
@@ -130,10 +116,9 @@ int main() {
         std::cout << "\n*** UDP Header ***" << std::endl;
         std::cout << "Source Port: " << ntohs(udp_header->uh_sport) << std::endl;
         std::cout << "Destination Port: " << ntohs(udp_header->uh_dport) << std::endl;
-        std::cout << "Length: " << ntohs(udp_header->uh_ulen) << std::endl;
 
         // 解析並顯示 UDP payload
-        UDP_Payload* payload = (UDP_Payload*)(buffer + (ip_header->ip_hl << 2) + sizeof(struct udphdr));
+        UDP_Payload* payload = (UDP_Payload*)(buffer + ip_header_len + sizeof(struct udphdr));
         displayPayload(*payload);
     }
 
