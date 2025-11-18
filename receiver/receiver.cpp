@@ -6,8 +6,6 @@
 #include <netinet/udp.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
 
 // 定義UDP Payload的每個欄位結構，依照需求將每個欄位的大小設為4bytes
 struct UDP_Payload {
