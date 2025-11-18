@@ -6,6 +6,8 @@
 #include <netinet/udp.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
 
 // 定義UDP payload的每個欄位結構，依照需求將每個欄位的大小設為4bytes
 struct UDP_Payload {
@@ -83,11 +85,19 @@ int main() {
         return -1;
     }
 
+    // 指定監聽的網路介面
+    const char* interface = "enp2s0";  // 監聽網路介面
+    if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, interface, strlen(interface)) < 0) {
+        perror("Failed to bind to device");
+        close(sockfd);
+        return -1;
+    }
+
     // 設置監聽的端口
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(6343);  // 設定監聽端口號為12345
+    server_addr.sin_port = htons(12345);  // 設定監聽端口號為12345
 
     // 綁定套接字
     if (bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
@@ -96,7 +106,7 @@ int main() {
         return -1;
     }
 
-    std::cout << "Listening on port 6343...\n";
+    std::cout << "Listening on port 12345, interface enp2s0..." << std::endl;
 
     while (true) {
         ssize_t packet_len = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)&client_addr, &client_len);
