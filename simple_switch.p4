@@ -16,6 +16,7 @@ enum bit<3> MIRROR_TYPE_t {
     E2E = 2
 };
 const bit<32> SAMPLING_RATE = 128;
+const bit<9> RECIRC_PORT = 36;
 parser MyIngressParser(packet_in pkt,
                 out my_header_t hdr,
                 out my_metadata_t meta,
@@ -24,7 +25,16 @@ parser MyIngressParser(packet_in pkt,
     TofinoIngressParser() tofino_parser;
     state start {
         tofino_parser.apply(pkt, ig_intr_md);
-        transition parse_ethernet;
+        transition select(ig_intr_md.ingress_port) {
+            RECIRC_PORT: parse_recirc_hdr;   // 從 recirc port 進來
+            default   : parse_ethernet;      // 一般 front-panel port
+        }
+    }
+
+    state parse_sample_hdr {
+        pkt.extract(hdr.sample);
+
+        transition parse_ethernet;  // 接著一樣去 parse_ethernet
     }
 
     state parse_ethernet {
@@ -139,18 +149,21 @@ control MyIngress(
 
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
-       
+        hdr.sample.setInvalid();
         if(idx==140 || idx == 143){
             pkt_count = inc_pkt.execute(idx);
             if(pkt_count==0){
+                hdr.sample.setValid();
+                hdr.sample.ingress_port = idx;
                 ig_tm_md.mcast_grp_a = 1; 
                 ig_tm_md.rid = 1;
+                meta.to_recirc = 1;
             }
         }
-        
-            
-       
-                
+        if(hdr.sample.ingress_port == 140){
+            ig_tm_md.ucast_egress_port = 33;
+            hdr.sample.setInvalid();
+        }        
     }
 }
 
@@ -183,7 +196,7 @@ control MyIngressDeparser(packet_out pkt,
                 hdr.ipv4.dst_addr
             });
         }
-
+        pkt.emit(hdr.sample);
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
