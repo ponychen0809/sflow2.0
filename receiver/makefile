@@ -1,6 +1,6 @@
-# Makefile for UDP Listener program
+# Makefile for compiling UDP packet listener using pcap library
 
-# 編譯器設定
+# 編譯器設置
 CXX = g++
 CXXFLAGS = -Wall -std=c++11
 
@@ -10,21 +10,24 @@ TARGET = receiver
 # 來源程式
 SRCS = receiver.cpp
 
-# 目標檔案
+# 目標物件檔案
 OBJS = $(SRCS:.cpp=.o)
 
-# 編譯與連結規則
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS)
+# 依賴庫
+LIBS = -lpcap
 
-# 目標檔案編譯規則
+# 編譯規則
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(LIBS)
+
+# 物件檔案編譯規則
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $<
 
-# 清除編譯產物
+# 清理編譯產物
 clean:
 	rm -f $(TARGET) $(OBJS)
 
-# 執行程序
+# 執行程式
 run: $(TARGET)
-	sudo ./$(TARGET)
+	sudo ./$(TARGET) enp2s0
