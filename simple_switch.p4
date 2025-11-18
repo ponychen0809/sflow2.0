@@ -122,7 +122,7 @@ control MyIngress(
         hdr.ipv4.total_len = (bit<16>)136;
         hdr.udp.dst_port = (bit<16>)6343;
         hdr.udp.hdr_length = (bit<16>)116;
-        hdr.ipv4.dst_addr = 0x0a0a0302;
+        hdr.ipv4.dst_addr = 0x0a0a0303;
         
         hdr.sflow_hd.setValid();
         hdr.sflow_hd.version = (bit<32>)5;
