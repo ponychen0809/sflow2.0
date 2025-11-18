@@ -192,6 +192,7 @@ control MyIngress(
             hdr.sflow_sample.record_count = (bit<32>)1;
             hdr.sflow_sample.enterprise_format = (bit<32>)1;
             hdr.sflow_sample.flow_length = (bit<32>)32;
+            
             hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
             hdr.sflow_sample.output_if = (bit<32>)0
             hdr.sflow_sample.pkt_length = (bit<32>)hdr.ipv4.total_len;
