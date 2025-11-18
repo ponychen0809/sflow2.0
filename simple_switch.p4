@@ -192,16 +192,16 @@ control MyIngress(
             hdr.sflow_sample.record_count = (bit<32>)1;
             hdr.sflow_sample.enterprise_format = (bit<32>)1;
             hdr.sflow_sample.flow_length = (bit<32>)32;
-            hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
-            hdr.sflow_sample.output_if = (bit<32>)0
-            hdr.sflow_sample.pkt_length = (bit<32>)hdr.ipv4.total_len;
-            hdr.sflow_sample.protocol = (bit<32>)hdr.ipv4.protocol;
-            hdr.sflow_sample.src_ip = (bit<32>)hdr.ipv4.src_addr;
-            hdr.sflow_sample.dst_ip = (bit<32>)hdr.ipv4.dst_addr;
-            hdr.sflow_sample.src_port = (bit<32>)hdr.udp.src_port;
-            hdr.sflow_sample.dst_port = (bit<32>)hdr.udp.dst_port;
-            hdr.sflow_sample.tcp_flags = (bit<32>)0;
-            hdr.sflow_sample.tos = (bit<32>)hdr.ipv4.diffserv;
+            // hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
+            // hdr.sflow_sample.output_if = (bit<32>)0
+            // hdr.sflow_sample.pkt_length = (bit<32>)hdr.ipv4.total_len;
+            // hdr.sflow_sample.protocol = (bit<32>)hdr.ipv4.protocol;
+            // hdr.sflow_sample.src_ip = (bit<32>)hdr.ipv4.src_addr;
+            // hdr.sflow_sample.dst_ip = (bit<32>)hdr.ipv4.dst_addr;
+            // hdr.sflow_sample.src_port = (bit<32>)hdr.udp.src_port;
+            // hdr.sflow_sample.dst_port = (bit<32>)hdr.udp.dst_port;
+            // hdr.sflow_sample.tcp_flags = (bit<32>)0;
+            // hdr.sflow_sample.tos = (bit<32>)hdr.ipv4.diffserv;
         }        
     }
 }
