@@ -9,7 +9,7 @@
 #include <net/if.h>
 #include <sys/ioctl.h>
 
-// 定義UDP payload的每個欄位結構，依照需求將每個欄位的大小設為4bytes
+// 定義UDP Payload的每個欄位結構，依照需求將每個欄位的大小設為4bytes
 struct UDP_Payload {
     uint32_t version;
     uint32_t address_type;
@@ -93,7 +93,7 @@ int main() {
         return -1;
     }
 
-    std::cout << "Listening on interface enp2s0, port 6343..." << std::endl;
+    std::cout << "Listening on interface enp2s0..." << std::endl;
 
     while (true) {
         ssize_t packet_len = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)&client_addr, &client_len);
@@ -107,19 +107,26 @@ int main() {
         int ip_header_len = ip_header->ip_hl * 4;
         struct udphdr* udp_header = (struct udphdr*)(buffer + ip_header_len);
 
-        // 顯示 IP header
-        std::cout << "\n*** IP Header ***" << std::endl;
-        std::cout << "Source IP: " << inet_ntoa(ip_header->ip_src) << std::endl;
-        std::cout << "Destination IP: " << inet_ntoa(ip_header->ip_dst) << std::endl;
+        // 檢查是否是 UDP 端口 6343
+        if (ntohs(udp_header->uh_dport) == 6343) {
+            std::cout << "Received a UDP packet on port 6343" << std::endl;
 
-        // 顯示 UDP header
-        std::cout << "\n*** UDP Header ***" << std::endl;
-        std::cout << "Source Port: " << ntohs(udp_header->uh_sport) << std::endl;
-        std::cout << "Destination Port: " << ntohs(udp_header->uh_dport) << std::endl;
+            // 解析並顯示 IP 和 UDP Header
+            std::cout << "\n*** IP Header ***" << std::endl;
+            std::cout << "Source IP: " << inet_ntoa(ip_header->ip_src) << std::endl;
+            std::cout << "Destination IP: " << inet_ntoa(ip_header->ip_dst) << std::endl;
 
-        // 解析並顯示 UDP payload
-        UDP_Payload* payload = (UDP_Payload*)(buffer + ip_header_len + sizeof(struct udphdr));
-        displayPayload(*payload);
+            std::cout << "\n*** UDP Header ***" << std::endl;
+            std::cout << "Source Port: " << ntohs(udp_header->uh_sport) << std::endl;
+            std::cout << "Destination Port: " << ntohs(udp_header->uh_dport) << std::endl;
+
+            // 解析並顯示 UDP payload
+            UDP_Payload* payload = (UDP_Payload*)(buffer + ip_header_len + sizeof(struct udphdr));
+            displayPayload(*payload);
+        } else {
+            // 如果是其他端口
+            std::cout << "Received a packet from enp2s0 (not port 6343)" << std::endl;
+        }
     }
 
     close(sockfd);
