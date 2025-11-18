@@ -180,7 +180,7 @@ control MyIngress(
         if(idx == 36){
             hdr.sample.setInvalid();
             ig_tm_md.ucast_egress_port = 141;
-            hdr.udp.dst_port = (bit<16>)6343;
+            set_sample_hd();
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)80;
