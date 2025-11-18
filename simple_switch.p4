@@ -275,7 +275,7 @@ control MyIngressDeparser(packet_out pkt,
                     hdr.sflow_sample.src_port,
                     hdr.sflow_sample.dst_port,
                     hdr.sflow_sample.tcp_flags,
-                    hdr.sflow_sample.tos,
+                    hdr.sflow_sample.tos
                 });
             }
         }
