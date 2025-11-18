@@ -154,7 +154,7 @@ control MyIngress(
             pkt_count = inc_pkt.execute(idx);
             if(pkt_count==0){
                 hdr.sample.setValid();
-                hdr.sample.ingress_port = idx;
+                hdr.sample.ingress_port =  (bit<32>)idx;
                 ig_tm_md.mcast_grp_a = 1; 
                 ig_tm_md.rid = 1;
             }
