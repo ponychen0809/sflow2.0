@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
+# 檢查 SDE 是否已設定
+if [ -z "$SDE" ]; then
+    echo "環境變數 \$SDE 尚未設定，請先執行："
+    echo "  source /root/bf-sde-9.7.0/set_sde.bash"
+    exit 1
+fi
+
+echo "Using SDE = $SDE"
+
 # 把指令餵給 run_bfshell.sh（注意這裡沒有加 -b）
-$SDE/run_bfshell.sh << 'EOF'
+"$SDE/run_bfshell.sh" << 'EOF'
 ucli
 pm
 
