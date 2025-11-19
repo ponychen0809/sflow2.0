@@ -40,13 +40,19 @@ struct UDP_Payload {
     uint32_t tos;
 };
 
+// 全域計數器：sub_agent_id = 1 / 2 各自的封包數
+static uint64_t g_subAgent1Count = 0;
+static uint64_t g_subAgent2Count = 0;
+
 void displayPayload(const UDP_Payload& payload) {
     cout << "UDP Payload Data:" << endl;
     cout << "Version: " << ntohl(payload.version) << endl;
     cout << "Address Type: " << ntohl(payload.address_type) << endl;
+
     struct in_addr agent_ip;
-    agent_ip.s_addr = payload.agent_addr;      // 這裡不要先 ntohl，保持「網路序」
+    agent_ip.s_addr = payload.agent_addr;      // 維持網路序，直接給 inet_ntoa
     cout << "Agent Addr: " << inet_ntoa(agent_ip) << endl;
+
     cout << "Sub Agent ID: " << ntohl(payload.sub_agent_id) << endl;
     cout << "Sequence Number: " << ntohl(payload.sequence_number) << endl;
     cout << "Uptime: " << ntohl(payload.uptime) << endl;
@@ -82,9 +88,11 @@ void displayPayload(const UDP_Payload& payload) {
 void packetHandler(unsigned char *userData,
                    const struct pcap_pkthdr *pkthdr,
                    const unsigned char *packet) {
+    (void)userData;
+
     cout << "============================" << endl;
 
-    // 1) 先處理 Ethernet header
+    // 1) Ethernet header
     if (pkthdr->caplen < sizeof(ether_header)) {
         cout << "Packet too short for Ethernet header" << endl;
         return;
@@ -113,8 +121,7 @@ void packetHandler(unsigned char *userData,
     }
 
     // 3) UDP header 在 IP header 後面
-    const unsigned char* udp_start =
-        ip_start + ip_hdr_len;
+    const unsigned char* udp_start = ip_start + ip_hdr_len;
 
     if (pkthdr->caplen <
         sizeof(struct ether_header) + ip_hdr_len + sizeof(struct udphdr)) {
@@ -124,15 +131,14 @@ void packetHandler(unsigned char *userData,
 
     auto* udp_hdr = (struct udphdr*)udp_start;
 
-    // BPF filter 已經是 udp port 6343，其實不用再檢查，但你要的話可以留著
+    // BPF filter 已經是 udp port 6343，這裡當保險
     if (ntohs(udp_hdr->dest) != 6343) {
         cout << "Not dest port 6343, port=" << ntohs(udp_hdr->dest) << endl;
         return;
     }
 
     // 4) payload 在 UDP header 後面
-    const unsigned char* payload_start =
-        udp_start + sizeof(struct udphdr);
+    const unsigned char* payload_start = udp_start + sizeof(struct udphdr);
 
     size_t min_size =
         sizeof(struct ether_header) + ip_hdr_len +
@@ -144,7 +150,29 @@ void packetHandler(unsigned char *userData,
     }
 
     auto* payload = (const UDP_Payload*)payload_start;
+
+    // 顯示 payload 詳細內容
     displayPayload(*payload);
+
+    // ===== 根據 sub_agent_id 計數與顯示統計 =====
+    uint32_t sub_id = ntohl(payload->sub_agent_id);
+
+    if (sub_id == 1) {
+        ++g_subAgent1Count;
+        cout << "[From SubAgent 1] Total count for SubAgent 1 = "
+             << g_subAgent1Count
+             << ", SubAgent 2 = " << g_subAgent2Count << endl;
+    } else if (sub_id == 2) {
+        ++g_subAgent2Count;
+        cout << "[From SubAgent 2] Total count for SubAgent 1 = "
+             << g_subAgent1Count
+             << ", SubAgent 2 = " << g_subAgent2Count << endl;
+    } else {
+        cout << "[From Unknown SubAgent ID = " << sub_id << "] "
+             << "SubAgent 1 = " << g_subAgent1Count
+             << ", SubAgent 2 = " << g_subAgent2Count << endl;
+    }
+    // ============================================
 }
 
 int main() {
@@ -162,19 +190,24 @@ int main() {
     const char* filter_exp = "udp port 6343";
     if (pcap_compile(handle, &fp, filter_exp, 0, PCAP_NETMASK_UNKNOWN) == -1) {
         cerr << "Error compiling filter: " << pcap_geterr(handle) << endl;
+        pcap_close(handle);
         return 1;
     }
 
     if (pcap_setfilter(handle, &fp) == -1) {
         cerr << "Error setting filter: " << pcap_geterr(handle) << endl;
+        pcap_freecode(&fp);
+        pcap_close(handle);
         return 1;
     }
+    pcap_freecode(&fp);
 
     cout << "Listening on enp2s0 for UDP port 6343..." << endl;
 
     // 開始捕獲封包
     if (pcap_loop(handle, 0, packetHandler, nullptr) < 0) {
         cerr << "Error capturing packets: " << pcap_geterr(handle) << endl;
+        pcap_close(handle);
         return 1;
     }
 
