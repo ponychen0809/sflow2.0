@@ -1,15 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-# 依你的環境調整 SDE_ROOT
-SDE_ROOT=/root/bf-sde-9.7.0
-
-echo "Using SDE_ROOT = $SDE_ROOT"
-
-cd "$SDE_ROOT"
-
 # 把指令餵給 run_bfshell.sh（注意這裡沒有加 -b）
-./run_bfshell.sh << 'EOF'
+$SDE/run_bfshell.sh << 'EOF'
 ucli
 pm
 
