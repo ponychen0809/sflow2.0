@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-cd /root/bf-sde-9.7.0
 
-./run_bfshell.sh -b << 'EOF'
+$SDE/run_bfshell.sh -b << 'EOF'
 ucli
 pm
 port-add 140 40G NONE
