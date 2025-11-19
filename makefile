@@ -12,4 +12,4 @@ bfrt:
 	${SDE}/run_switchd.sh -p simple_switch
 
 test:
-	${SDE}/run_p4_tests.sh -p simple_switch -t ./ -s config_simple_switch.SimpleSwitchTest
+	${SDE}/run_p4_tests.sh -p simple_switch -t ./ -s config_simple_switch.SimpleSwitchTest -f ./ports.json
