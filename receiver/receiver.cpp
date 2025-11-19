@@ -79,12 +79,16 @@ void packetHandler(unsigned char *userData, const struct pcap_pkthdr *pkthdr, co
     std::cout << "============================" << std::endl;
     // 檢查是否是 UDP 封包
     if (ip_hdr->ip_p != IPPROTO_UDP) {
+                std::cout << "Not a UDP" << std::endl;
+
         return;
     }
 
     // 解析 UDP header
     auto* udp_hdr = (struct udphdr*)(packet + ip_hdr_len);
     if (ntohs(udp_hdr->dest) != 6343) {
+        std::cout << "Not a 6343" << std::endl;
+
         return;
     }
 
