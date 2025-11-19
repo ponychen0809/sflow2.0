@@ -12,9 +12,9 @@ p4.pipe.MyIngress.ingress_port_forward.add_with_set_out_port(ingress_port=142, p
 
 p4.pipe.MyIngress.ingress_port_forward.add_with_set_out_port(ingress_port=143, port=142)
 
-p4.pipe.MyIngress.port_sampling_rate.add_with_set_sampling_rate(ingress_port=140, sampling_rate=100)
+p4.pipe.MyIngress.port_sampling_rate.add_with_set_sampling_rate(ingress_port=140, sampling_rate=99)
 
-p4.pipe.MyIngress.port_sampling_rate.add_with_set_sampling_rate(ingress_port=143, sampling_rate=50)
+p4.pipe.MyIngress.port_sampling_rate.add_with_set_sampling_rate(ingress_port=143, sampling_rate=49)
 
 p4_pre.node.add(DEV_PORT=[32], MULTICAST_LAG_ID=[], MULTICAST_NODE_ID=1, MULTICAST_RID=1)
 
