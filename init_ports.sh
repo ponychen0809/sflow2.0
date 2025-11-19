@@ -16,18 +16,18 @@ ucli
 pm
 
 
-port-add 140 40G NONE
+port-add 140 10G NONE
 port-enb 140
 
 
-port-add 141 40G NONE
+port-add 141 10G NONE
 port-enb 141
 
 
-port-add 142 40G NONE
+port-add 142 10G NONE
 port-enb 142
 
-port-add 143 40G NONE
+port-add 143 10G NONE
 port-enb 143
 
 quit
