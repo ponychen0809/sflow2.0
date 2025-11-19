@@ -1,62 +1,27 @@
-#!/usr/bin/env python3
-import bfrt_grpc.client as gc
+# config_simple_switch.py
+# 這個檔案會在 bfshell 的 bfrt_python 環境裡執行，
+# 變數 bfrt, simple_switch 都已經幫你準備好了。
 
-P4_NAME = "simple_switch"
-GRPC_ADDR = "localhost:50052"
-DEVICE_ID = 0
+# 如果你以前在 CLI 是先打：
+#   bfrt.simple_switch.pipe ...
+# 那你在檔案裡也可以這樣寫；只是你現在已經在 simple_switch namespace 下，
+# 假設 CLI 裡現在 prompt 是：
+#   simple_switch >
+# 那就直接用 simple_switch 開頭就好了。
 
-def main():
-    # 連到 Tofino
-    interface = gc.ClientInterface(
-        grpc_addr=GRPC_ADDR,
-        client_id=0,
-        device_id=DEVICE_ID,
-        is_master=True
-    )
+simple_switch.pipe.MyIngress.ingress_port_forward.add_with_set_out_port(
+    ingress_port=140, port=141)
 
-    # 綁定 pipeline
-    interface.bind_pipeline_config(p4_name=P4_NAME)
+simple_switch.pipe.MyIngress.ingress_port_forward.add_with_set_out_port(
+    ingress_port=141, port=140)
 
-    # 拿 bfrt_info
-    bfrt_info = interface.bfrt_info_get(P4_NAME)
+simple_switch.pipe.MyIngress.ingress_port_forward.add_with_set_out_port(
+    ingress_port=142, port=143)
 
-    # 取得 table 物件
-    ingress_port_forward = bfrt_info.table_get("MyIngress.ingress_port_forward")
-    port_sampling_rate   = bfrt_info.table_get("MyIngress.port_sampling_rate")
+simple_switch.pipe.MyIngress.ingress_port_forward.add_with_set_out_port(
+    ingress_port=143, port=142)
 
-    # 目標：所有 pipe
-    target = gc.Target(device_id=DEVICE_ID, pipe_id=0xffff)
+simple_switch.pipe.MyIngress.port_sampling_rate.add_with_set_sampling_rate(
+    ingress_port=140, sampling_rate=100)
 
-    # ---------- 填 ingress_port_forward ----------
-    def add_ingress_port_forward(in_port, out_port):
-        key = ingress_port_forward.make_key([
-            gc.KeyTuple('ig_intr_md.ingress_port', in_port)
-        ])
-        data = ingress_port_forward.make_data(
-            [gc.DataTuple('port', out_port)],
-            'MyIngress.set_out_port'      # action 名稱
-        )
-        ingress_port_forward.entry_add(target, [key], [data])
-
-    add_ingress_port_forward(140, 141)
-    add_ingress_port_forward(141, 140)
-    add_ingress_port_forward(142, 143)
-    add_ingress_port_forward(143, 142)
-
-    # ---------- 填 port_sampling_rate ----------
-    def add_port_sampling_rate(in_port, rate):
-        key = port_sampling_rate.make_key([
-            gc.KeyTuple('ig_intr_md.ingress_port', in_port)
-        ])
-        data = port_sampling_rate.make_data(
-            [gc.DataTuple('sampling_rate', rate)],
-            'MyIngress.set_sampling_rate'  # action 名稱
-        )
-        port_sampling_rate.entry_add(target, [key], [data])
-
-    add_port_sampling_rate(140, 100)
-
-    print("Programming done.")
-
-if __name__ == "__main__":
-    main()
+print(">>> simple_switch config done.")
