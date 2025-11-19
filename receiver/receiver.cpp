@@ -152,7 +152,7 @@ void packetHandler(unsigned char *userData,
     auto* payload = (const UDP_Payload*)payload_start;
 
     // 顯示 payload 詳細內容
-    displayPayload(*payload);
+    // displayPayload(*payload);
 
     // ===== 根據 sub_agent_id 計數與顯示統計 =====
     uint32_t sub_id = ntohl(payload->sub_agent_id);
