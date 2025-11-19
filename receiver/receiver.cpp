@@ -5,10 +5,11 @@
 #include <arpa/inet.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
+#include <net/ethernet.h>   // for struct ether_header
 
 using namespace std;
 
-// UDP Payload 解析結構，這取決於您的 payload 格式
+// UDP Payload 解析結構
 struct UDP_Payload {
     uint32_t version;
     uint32_t address_type;
@@ -39,63 +40,108 @@ struct UDP_Payload {
     uint32_t tos;
 };
 
-// 解析並顯示 UDP Payload 資料
 void displayPayload(const UDP_Payload& payload) {
     cout << "UDP Payload Data:" << endl;
-    cout << "Version: " << payload.version << endl;
-    cout << "Address Type: " << payload.address_type << endl;
-    cout << "Agent Addr: " << payload.agent_addr << endl;
-    cout << "Sub Agent ID: " << payload.sub_agent_id << endl;
-    cout << "Sequence Number: " << payload.sequence_number << endl;
-    cout << "Uptime: " << payload.uptime << endl;
-    cout << "Samples: " << payload.samples << endl;
-    cout << "Sample Type: " << payload.sample_type << endl;
-    cout << "Sample Length: " << payload.sample_length << endl;
-    cout << "Sample Sequence Number: " << payload.sample_seq_num << endl;
-    cout << "Source ID: " << payload.source_id << endl;
-    cout << "Sampling Rate: " << payload.sampling_rate << endl;
-    cout << "Sample Pool: " << payload.sample_pool << endl;
-    cout << "Drops: " << payload.drops << endl;
-    cout << "Input IF: " << payload.input_if << endl;
-    cout << "Output IF: " << payload.output_if << endl;
-    cout << "Record Count: " << payload.record_count << endl;
-    cout << "Enterprise Format: " << payload.enterprise_format << endl;
-    cout << "Flow Length: " << payload.flow_length << endl;
-    cout << "Packet Length: " << payload.pkt_length << endl;
-    cout << "Protocol: " << payload.protocol << endl;
-    cout << "Source IP: " << inet_ntoa(*(struct in_addr*)&payload.src_ip) << endl;
-    cout << "Destination IP: " << inet_ntoa(*(struct in_addr*)&payload.dst_ip) << endl;
-    cout << "Source Port: " << ntohs(payload.src_port) << endl;
-    cout << "Destination Port: " << ntohs(payload.dst_port) << endl;
-    cout << "TCP Flags: " << payload.tcp_flags << endl;
-    cout << "TOS: " << payload.tos << endl;
+    cout << "Version: " << ntohl(payload.version) << endl;
+    cout << "Address Type: " << ntohl(payload.address_type) << endl;
+    cout << "Agent Addr: " << ntohl(payload.agent_addr) << endl;
+    cout << "Sub Agent ID: " << ntohl(payload.sub_agent_id) << endl;
+    cout << "Sequence Number: " << ntohl(payload.sequence_number) << endl;
+    cout << "Uptime: " << ntohl(payload.uptime) << endl;
+    cout << "Samples: " << ntohl(payload.samples) << endl;
+    cout << "Sample Type: " << ntohl(payload.sample_type) << endl;
+    cout << "Sample Length: " << ntohl(payload.sample_length) << endl;
+    cout << "Sample Sequence Number: " << ntohl(payload.sample_seq_num) << endl;
+    cout << "Source ID: " << ntohl(payload.source_id) << endl;
+    cout << "Sampling Rate: " << ntohl(payload.sampling_rate) << endl;
+    cout << "Sample Pool: " << ntohl(payload.sample_pool) << endl;
+    cout << "Drops: " << ntohl(payload.drops) << endl;
+    cout << "Input IF: " << ntohl(payload.input_if) << endl;
+    cout << "Output IF: " << ntohl(payload.output_if) << endl;
+    cout << "Record Count: " << ntohl(payload.record_count) << endl;
+    cout << "Enterprise Format: " << ntohl(payload.enterprise_format) << endl;
+    cout << "Flow Length: " << ntohl(payload.flow_length) << endl;
+    cout << "Packet Length: " << ntohl(payload.pkt_length) << endl;
+    cout << "Protocol: " << ntohl(payload.protocol) << endl;
+
+    struct in_addr sip, dip;
+    sip.s_addr = payload.src_ip;
+    dip.s_addr = payload.dst_ip;
+    cout << "Source IP: "      << inet_ntoa(sip) << endl;
+    cout << "Destination IP: " << inet_ntoa(dip) << endl;
+
+    cout << "Source Port: "      << ntohl(payload.src_port) << endl;
+    cout << "Destination Port: " << ntohl(payload.dst_port) << endl;
+    cout << "TCP Flags: "        << ntohl(payload.tcp_flags) << endl;
+    cout << "TOS: "              << ntohl(payload.tos) << endl;
 }
 
 // 處理每個捕獲的封包
-void packetHandler(unsigned char *userData, const struct pcap_pkthdr *pkthdr, const unsigned char *packet) {
-    // 解析 IP header
-    auto* ip_hdr = (struct ip*)packet;
+void packetHandler(unsigned char *userData,
+                   const struct pcap_pkthdr *pkthdr,
+                   const unsigned char *packet) {
+    cout << "============================" << endl;
+
+    // 1) 先處理 Ethernet header
+    if (pkthdr->caplen < sizeof(ether_header)) {
+        cout << "Packet too short for Ethernet header" << endl;
+        return;
+    }
+
+    auto* eth_hdr = (const struct ether_header*)packet;
+    if (ntohs(eth_hdr->ether_type) != ETHERTYPE_IP) {
+        cout << "Not IPv4 (ether_type != 0x0800)" << endl;
+        return;
+    }
+
+    // 2) IP header 在 Ethernet header 後面
+    const unsigned char* ip_start = packet + sizeof(struct ether_header);
+
+    if (pkthdr->caplen < sizeof(struct ether_header) + sizeof(struct ip)) {
+        cout << "Packet too short for IP header" << endl;
+        return;
+    }
+
+    auto* ip_hdr = (struct ip*)ip_start;
     int ip_hdr_len = ip_hdr->ip_hl * 4;
-    std::cout << "============================" << std::endl;
-    // 檢查是否是 UDP 封包
+
     if (ip_hdr->ip_p != IPPROTO_UDP) {
-                std::cout << "Not a UDP" << std::endl;
-
+        cout << "Not a UDP (ip_p=" << (int)ip_hdr->ip_p << ")" << endl;
         return;
     }
 
-    // 解析 UDP header
-    auto* udp_hdr = (struct udphdr*)(packet + ip_hdr_len);
+    // 3) UDP header 在 IP header 後面
+    const unsigned char* udp_start =
+        ip_start + ip_hdr_len;
+
+    if (pkthdr->caplen <
+        sizeof(struct ether_header) + ip_hdr_len + sizeof(struct udphdr)) {
+        cout << "Packet too short for UDP header" << endl;
+        return;
+    }
+
+    auto* udp_hdr = (struct udphdr*)udp_start;
+
+    // BPF filter 已經是 udp port 6343，其實不用再檢查，但你要的話可以留著
     if (ntohs(udp_hdr->dest) != 6343) {
-        std::cout << "Not a 6343" << std::endl;
-
+        cout << "Not dest port 6343, port=" << ntohs(udp_hdr->dest) << endl;
         return;
     }
 
-    // 計算 payload 偏移
-    auto* payload = (UDP_Payload*)(packet + ip_hdr_len + sizeof(struct udphdr));
+    // 4) payload 在 UDP header 後面
+    const unsigned char* payload_start =
+        udp_start + sizeof(struct udphdr);
 
-    // 顯示解析的 UDP Payload
+    size_t min_size =
+        sizeof(struct ether_header) + ip_hdr_len +
+        sizeof(struct udphdr) + sizeof(UDP_Payload);
+
+    if (pkthdr->caplen < min_size) {
+        cout << "Packet too short for UDP_Payload struct" << endl;
+        return;
+    }
+
+    auto* payload = (const UDP_Payload*)payload_start;
     displayPayload(*payload);
 }
 
@@ -130,7 +176,6 @@ int main() {
         return 1;
     }
 
-    // 關閉抓包介面
     pcap_close(handle);
     return 0;
 }
