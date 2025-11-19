@@ -178,7 +178,7 @@ control MyIngress(
         if(idx == 36){
             hdr.sample.setInvalid();
             ig_tm_md.ucast_egress_port = 142;
-            set_sample_hd();
+            
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)80;
@@ -201,6 +201,7 @@ control MyIngress(
             hdr.sflow_sample.dst_port = (bit<32>)hdr.udp.dst_port;
             hdr.sflow_sample.tcp_flags = (bit<32>)0;
             hdr.sflow_sample.tos = (bit<32>)hdr.ipv4.diffserv;
+            set_sample_hd();
         }        
     }
 }
