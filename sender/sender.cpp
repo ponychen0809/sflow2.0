@@ -13,7 +13,7 @@ using namespace std;
 
 int main() {
     // 設定目標 IP 和端口
-    string target_ip = "10.10.3.3";  // 目標 IP
+    string target_ip = "10.10.3.2";  // 目標 IP
     int target_port = 12345;         // 目標端口
 
     // 創建 UDP socket
