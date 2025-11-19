@@ -44,7 +44,9 @@ void displayPayload(const UDP_Payload& payload) {
     cout << "UDP Payload Data:" << endl;
     cout << "Version: " << ntohl(payload.version) << endl;
     cout << "Address Type: " << ntohl(payload.address_type) << endl;
-    cout << "Agent Addr: " << ntohl(payload.agent_addr) << endl;
+    struct in_addr agent_ip;
+    agent_ip.s_addr = payload.agent_addr;      // 這裡不要先 ntohl，保持「網路序」
+    cout << "Agent Addr: " << inet_ntoa(agent_ip) << endl;
     cout << "Sub Agent ID: " << ntohl(payload.sub_agent_id) << endl;
     cout << "Sequence Number: " << ntohl(payload.sequence_number) << endl;
     cout << "Uptime: " << ntohl(payload.uptime) << endl;
