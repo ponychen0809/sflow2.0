@@ -118,7 +118,7 @@ control MyIngress(
     action set_sampling_rate(bit<32> sampling_rate) {
         hdr.sample.sampling_rate=sampling_rate;
     }
-    action set_sample_hd() {
+    action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
         hdr.ipv4.total_len = (bit<16>)136;
         hdr.udp.dst_port = (bit<16>)6343;
         hdr.udp.hdr_length = (bit<16>)116;
@@ -127,8 +127,8 @@ control MyIngress(
         hdr.sflow_hd.setValid();
         hdr.sflow_hd.version = (bit<32>)5;
         hdr.sflow_hd.address_type = (bit<32>)1;
-        hdr.sflow_hd.agent_addr = (bit<32>)1;
-        hdr.sflow_hd.sub_agent_id = (bit<32>)1;
+        hdr.sflow_hd.agent_addr = (bit<32>)agent_addr;
+        hdr.sflow_hd.sub_agent_id = (bit<32>)agent_id;
         hdr.sflow_hd.sequence_number = (bit<32>)5;
         hdr.sflow_hd.uptime = (bit<32>)12345;
         hdr.sflow_hd.samples = (bit<32>)1;  
@@ -153,6 +153,17 @@ control MyIngress(
         }
         actions = {
             set_sampling_rate;
+            NoAction;
+        }
+        size = 256;
+        default_action = NoAction;
+    }
+    table set_port_agent {
+        key = {
+            hdr.sample.ingress_port : exact;
+        }
+        actions = {
+            set_sample_hd;
             NoAction;
         }
         size = 256;
@@ -201,7 +212,7 @@ control MyIngress(
             hdr.sflow_sample.dst_port = (bit<32>)hdr.udp.dst_port;
             hdr.sflow_sample.tcp_flags = (bit<32>)0;
             hdr.sflow_sample.tos = (bit<32>)hdr.ipv4.diffserv;
-            set_sample_hd();
+            set_port_agent.apply();
         }        
     }
 }
