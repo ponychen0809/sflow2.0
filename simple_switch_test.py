@@ -72,7 +72,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             [d1, d2, d3, d4]
         )
 
-        print("✅ ingress_port_forward 規則已寫入完成")
+        print("✅ ingress_port_forward 規則已寫入完成!!!!")
 
     def cleanUp(self):
         # 把這個 test 裡管到的 tables 清空
