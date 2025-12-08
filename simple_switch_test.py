@@ -29,7 +29,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         # 3) port_agent table
         self.port_agent_tbl = self.bfrt_info.table_get("MyIngress.set_port_agent")
 
-        # 4) PRE tables
+        # 4) PRE tables（名字是 $pre.node / $pre.mgid）
         self.pre_node_tbl = self.bfrt_info.table_get("$pre.node")
         self.pre_mgid_tbl = self.bfrt_info.table_get("$pre.mgid")
 
@@ -107,15 +107,14 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         # =========================================================
         # (3) MyIngress.set_port_agent
-        #     等價於 CLI：
+        #     對應 CLI：
         #     set_port_agent.add_with_set_sample_hd(ingress_port=140,
         #         agent_addr=0x0a0a0301, agent_id=1)
         #     set_port_agent.add_with_set_sample_hd(ingress_port=143,
         #         agent_addr=0x0a0a0302, agent_id=2)
         # =========================================================
-        # ⚠️ 注意：這裡的 key field 名稱是 "ingress_port"（沒有 ig_intr_md.）
         pa1_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("hdr.sample.ingress_port", 140)
+            gc.KeyTuple("hdr.sample.ingress_port", 140)   # 注意：這裡叫 ingress_port
         ])
         pa1_data = self.port_agent_tbl.make_data(
             [
@@ -145,33 +144,38 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         # =========================================================
         # (4) PRE multicast: $pre.node / $pre.mgid
+        #     完全照 CLI 欄位名：
+        #     pre.node.add(DEV_PORT=[32], MULTICAST_LAG_ID=[],
+        #                  MULTICAST_NODE_ID=1, MULTICAST_RID=1)
+        #     pre.mgid.add(MGID=1, MULTICAST_NODE_ID=[1],
+        #                  MULTICAST_NODE_L1_XID=[0],
+        #                  MULTICAST_NODE_L1_XID_VALID=[0])
         # =========================================================
         node_id = 1
         dev_port_list = [32]   # device port 32 (對應 PTF port 320 via ports.json)
 
-        # $pre.node
+        # ---- $pre.node ----
         node_key = self.pre_node_tbl.make_key([
-            gc.KeyTuple("$pre.node_id", node_id)
+            gc.KeyTuple("MULTICAST_NODE_ID", node_id)
         ])
         node_data = self.pre_node_tbl.make_data([
-            gc.DataTuple("$pre.dev_port", int_arr_val=dev_port_list),
-            gc.DataTuple("$pre.lag_id", int_arr_val=[]),
-            gc.DataTuple("$pre.mcast_rid", 1),
-            gc.DataTuple("$pre.l1_xid", int_arr_val=[0]),
-            gc.DataTuple("$pre.l1_xid_valid", bool_arr_val=[False]),
+            gc.DataTuple("DEV_PORT", int_arr_val=dev_port_list),
+            gc.DataTuple("MULTICAST_LAG_ID", int_arr_val=[]),
+            gc.DataTuple("MULTICAST_RID", 1)
+            # CLI 沒提到 L1 的欄位，這裡就先不塞
         ])
         self.pre_node_tbl.entry_add(self.dev_tgt, [node_key], [node_data])
         print("✅ $pre.node 已寫入")
 
-        # $pre.mgid
+        # ---- $pre.mgid ----
         mgid = 1
         mgid_key = self.pre_mgid_tbl.make_key([
-            gc.KeyTuple("$pre.mgid", mgid)
+            gc.KeyTuple("MGID", mgid)
         ])
         mgid_data = self.pre_mgid_tbl.make_data([
-            gc.DataTuple("$pre.node_id", int_arr_val=[node_id]),
-            gc.DataTuple("$pre.l1_xid", int_arr_val=[0]),
-            gc.DataTuple("$pre.l1_xid_valid", bool_arr_val=[False]),
+            gc.DataTuple("MULTICAST_NODE_ID", int_arr_val=[node_id]),
+            gc.DataTuple("MULTICAST_NODE_L1_XID", int_arr_val=[0]),
+            gc.DataTuple("MULTICAST_NODE_L1_XID_VALID", int_arr_val=[0]),
         ])
         self.pre_mgid_tbl.entry_add(self.dev_tgt, [mgid_key], [mgid_data])
         print("✅ $pre.mgid 已寫入")
