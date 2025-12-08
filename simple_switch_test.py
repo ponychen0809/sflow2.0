@@ -115,7 +115,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         # =========================================================
         # ⚠️ 注意：這裡的 key field 名稱是 "ingress_port"（沒有 ig_intr_md.）
         pa1_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 140)
+            gc.KeyTuple("hdr.sample.ingress_port", 140)
         ])
         pa1_data = self.port_agent_tbl.make_data(
             [
@@ -126,7 +126,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         )
 
         pa2_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 143)
+            gc.KeyTuple("hdr.sample.ingress_port", 143)
         ])
         pa2_data = self.port_agent_tbl.make_data(
             [
