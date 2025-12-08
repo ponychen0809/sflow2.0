@@ -67,9 +67,10 @@ class SimpleSwitchTest(BfRuntimeTest):
             UDP(sport=1234, dport=5678) /
             b"test"
         )
-
+        count = 0
         while True:
-            print("➡️  send_packet() to port 140 ...")
+            count = count+1
+            print(count,", send_packet() to port 320 ")
             # 第 1 個參數是 test case (self)，第二個是 port 號，第三個是封包
             send_packet(self, 320, pkt)
             time.sleep(1)
