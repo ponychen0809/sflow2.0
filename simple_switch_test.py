@@ -71,7 +71,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         while True:
             print("➡️  send_packet() to port 140 ...")
             # 第 1 個參數是 test case (self)，第二個是 port 號，第三個是封包
-            send_packet(self, 140, pkt)
+            send_packet(self, 320, pkt)
             time.sleep(1)
 
     def cleanUp(self):
