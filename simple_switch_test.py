@@ -68,7 +68,9 @@ class SimpleSwitchTest(BfRuntimeTest):
             b"test"
         )
         count = 0
+        input()
         while True:
+
             count = count+1
             print(count,", send_packet() to port 320 ")
             # 第 1 個參數是 test case (self)，第二個是 port 號，第三個是封包
