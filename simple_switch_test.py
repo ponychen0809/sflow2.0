@@ -212,7 +212,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         )
 
         count = 0
-        raw_input("按 Enter 後開始每秒送封包到 PTF port 320...\n")
+        input("按 Enter 後開始每秒送封包到 PTF port 320...\n")
 
         while True:
             count += 1
