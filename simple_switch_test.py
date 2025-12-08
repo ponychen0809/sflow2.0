@@ -113,8 +113,9 @@ class SimpleSwitchTest(BfRuntimeTest):
         #     set_port_agent.add_with_set_sample_hd(ingress_port=143,
         #         agent_addr=0x0a0a0302, agent_id=2)
         # =========================================================
+        # ⚠️ 注意：這裡的 key field 名稱是 "ingress_port"（沒有 ig_intr_md.）
         pa1_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 140)
+            gc.KeyTuple("ingress_port", 140)
         ])
         pa1_data = self.port_agent_tbl.make_data(
             [
@@ -125,7 +126,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         )
 
         pa2_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 143)
+            gc.KeyTuple("ingress_port", 143)
         ])
         pa2_data = self.port_agent_tbl.make_data(
             [
@@ -144,12 +145,6 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         # =========================================================
         # (4) PRE multicast: $pre.node / $pre.mgid
-        #     等價於：
-        #     pre.node.add(DEV_PORT=[32], MULTICAST_LAG_ID=[],
-        #                  MULTICAST_NODE_ID=1, MULTICAST_RID=1)
-        #     pre.mgid.add(MGID=1, MULTICAST_NODE_ID=[1],
-        #                  MULTICAST_NODE_L1_XID=[0],
-        #                  MULTICAST_NODE_L1_XID_VALID=[0])
         # =========================================================
         node_id = 1
         dev_port_list = [32]   # device port 32 (對應 PTF port 320 via ports.json)
