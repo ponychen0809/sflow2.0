@@ -171,7 +171,7 @@ control MyIngress(
     }
 
     apply {
-        // ingress_port_forward.apply();
+        ingress_port_forward.apply();
         port_sampling_rate.apply();
         if(ig_intr_md.ingress_port == 320){
             ig_tm_md.ucast_egress_port = 142;
