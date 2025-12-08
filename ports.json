@@ -1,7 +1,7 @@
 {
     "PortToIf": [
         {
-            "device_port":140,
+            "device_port":320,
             "if":"enp6s0"
         }
     ]
