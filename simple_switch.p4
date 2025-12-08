@@ -174,7 +174,7 @@ control MyIngress(
         ingress_port_forward.apply();
         port_sampling_rate.apply();
         if(ig_intr_md.ingress_port == 320){
-            ig_tm_md.ucast_egress_port = 141;
+            ig_tm_md.ucast_egress_port = 142;
         }
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         bit<32> pkt_count;
