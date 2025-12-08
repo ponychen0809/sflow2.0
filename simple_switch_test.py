@@ -12,6 +12,7 @@ import time
 class SimpleSwitchTest(BfRuntimeTest):
     def setUp(self):
         self.client_id = 0
+        # 這裡直接寫程式名即可，跟你 run_p4_tests.sh -p simple_switch 對應
         self.p4_name = "simple_switch"
         self.dev = 0
         self.dev_tgt = gc.Target(self.dev, pipe_id=0xFFFF)
@@ -29,7 +30,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         # 3) port_agent table
         self.port_agent_tbl = self.bfrt_info.table_get("MyIngress.set_port_agent")
 
-        # 4) PRE tables（名字是 $pre.node / $pre.mgid）
+        # 4) PRE tables —— 名字是 $pre.node / $pre.mgid
         self.pre_node_tbl = self.bfrt_info.table_get("$pre.node")
         self.pre_mgid_tbl = self.bfrt_info.table_get("$pre.mgid")
 
@@ -114,7 +115,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         #         agent_addr=0x0a0a0302, agent_id=2)
         # =========================================================
         pa1_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("hdr.sample.ingress_port", 140)   # 注意：這裡叫 ingress_port
+            gc.KeyTuple("ingress_port", 140)   # 注意：這裡叫 ingress_port（沒有 ig_intr_md.）
         ])
         pa1_data = self.port_agent_tbl.make_data(
             [
@@ -125,7 +126,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         )
 
         pa2_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("hdr.sample.ingress_port", 143)
+            gc.KeyTuple("ingress_port", 143)
         ])
         pa2_data = self.port_agent_tbl.make_data(
             [
@@ -144,7 +145,8 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         # =========================================================
         # (4) PRE multicast: $pre.node / $pre.mgid
-        #     完全照 CLI 欄位名：
+        #     完全仿照你貼的範例寫法（有 $ 開頭的欄位名）
+        #
         #     pre.node.add(DEV_PORT=[32], MULTICAST_LAG_ID=[],
         #                  MULTICAST_NODE_ID=1, MULTICAST_RID=1)
         #     pre.mgid.add(MGID=1, MULTICAST_NODE_ID=[1],
@@ -152,33 +154,44 @@ class SimpleSwitchTest(BfRuntimeTest):
         #                  MULTICAST_NODE_L1_XID_VALID=[0])
         # =========================================================
         node_id = 1
-        dev_port_list = [32]   # device port 32 (對應 PTF port 320 via ports.json)
+        dev_port_list = [32]   # device port 32 (ports.json map → PTF port 320)
 
         # ---- $pre.node ----
-        node_key = self.pre_node_tbl.make_key([
-            gc.KeyTuple("MULTICAST_NODE_ID", node_id)
-        ])
-        node_data = self.pre_node_tbl.make_data([
-            gc.DataTuple("DEV_PORT", int_arr_val=dev_port_list),
-            gc.DataTuple("MULTICAST_LAG_ID", int_arr_val=[]),
-            gc.DataTuple("MULTICAST_RID", 1)
-            # CLI 沒提到 L1 的欄位，這裡就先不塞
-        ])
-        self.pre_node_tbl.entry_add(self.dev_tgt, [node_key], [node_data])
-        print("✅ $pre.node 已寫入")
+        try:
+            self.pre_node_tbl.entry_add(
+                self.dev_tgt,
+                [self.pre_node_tbl.make_key([
+                    gc.KeyTuple('$MULTICAST_NODE_ID', node_id)
+                ])],
+                [self.pre_node_tbl.make_data([
+                    gc.DataTuple('$MULTICAST_RID', 1),
+                    gc.DataTuple('$MULTICAST_LAG_ID', int_arr_val=[]),
+                    gc.DataTuple('$DEV_PORT', int_arr_val=dev_port_list)
+                ])]
+            )
+            print("✅ $pre.node 已寫入")
+        except Exception as e:
+            print("Error on adding $pre.node: {}".format(e))
 
         # ---- $pre.mgid ----
         mgid = 1
-        mgid_key = self.pre_mgid_tbl.make_key([
-            gc.KeyTuple("MGID", mgid)
-        ])
-        mgid_data = self.pre_mgid_tbl.make_data([
-            gc.DataTuple("MULTICAST_NODE_ID", int_arr_val=[node_id]),
-            gc.DataTuple("MULTICAST_NODE_L1_XID", int_arr_val=[0]),
-            gc.DataTuple("MULTICAST_NODE_L1_XID_VALID", int_arr_val=[0]),
-        ])
-        self.pre_mgid_tbl.entry_add(self.dev_tgt, [mgid_key], [mgid_data])
-        print("✅ $pre.mgid 已寫入")
+        try:
+            self.pre_mgid_tbl.entry_add(
+                self.dev_tgt,
+                [self.pre_mgid_tbl.make_key([
+                    gc.KeyTuple('$MGID', mgid)
+                ])],
+                [self.pre_mgid_tbl.make_data([
+                    gc.DataTuple('$MULTICAST_NODE_ID', int_arr_val=[node_id]),
+                    gc.DataTuple('$MULTICAST_NODE_L1_XID_VALID',
+                                 bool_arr_val=[False]),
+                    gc.DataTuple('$MULTICAST_NODE_L1_XID',
+                                 int_arr_val=[0])
+                ])]
+            )
+            print("✅ $pre.mgid 已寫入")
+        except Exception as e:
+            print("Error on adding $pre.mgid: {}".format(e))
 
         # =========================================================
         # (5) 啟動背景 thread：每秒送封包到 PTF port 320
@@ -199,7 +212,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         )
 
         count = 0
-        input("按 Enter 後開始每秒送封包到 PTF port 320...\n")
+        raw_input("按 Enter 後開始每秒送封包到 PTF port 320...\n")
 
         while True:
             count += 1
@@ -208,7 +221,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             time.sleep(1)
 
     def cleanUp(self):
-        # 目前不清 table
+        # 目前不清 table，避免把你其他設定刪掉
         pass
 
     def tearDown(self):
