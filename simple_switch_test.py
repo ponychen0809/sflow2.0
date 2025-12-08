@@ -115,7 +115,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         #         agent_addr=0x0a0a0302, agent_id=2)
         # =========================================================
         pa1_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("ingress_port", 140)   # 注意：這裡叫 ingress_port（沒有 ig_intr_md.）
+            gc.KeyTuple("hdr.sample.ingress_port", 140)   # 注意：這裡叫 ingress_port（沒有 ig_intr_md.）
         ])
         pa1_data = self.port_agent_tbl.make_data(
             [
@@ -126,7 +126,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         )
 
         pa2_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("ingress_port", 143)
+            gc.KeyTuple("hdr.sample.ingress_port", 143)
         ])
         pa2_data = self.port_agent_tbl.make_data(
             [
