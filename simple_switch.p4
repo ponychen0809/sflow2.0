@@ -175,47 +175,49 @@ control MyIngress(
         port_sampling_rate.apply();
         if(ig_intr_md.ingress_port == 320){
             ig_tm_md.ucast_egress_port = 142;
+        }else{
+            ig_tm_md.ucast_egress_port = 141;
         }
-        bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
-        bit<32> pkt_count;
-        hdr.sample.setInvalid();
-        if(idx==140 || idx == 143){
-            pkt_count = inc_pkt.execute(idx);
-            if(pkt_count==0){
-                hdr.sample.setValid();
-                hdr.sample.ingress_port =  (bit<32>)idx;
-                ig_tm_md.mcast_grp_a = 1; 
-                ig_tm_md.rid = 1;
-            }
-        }
-        if(idx == 36){
-            hdr.sample.setInvalid();
-            ig_tm_md.ucast_egress_port = 142;
+        // bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
+        // bit<32> pkt_count;
+        // hdr.sample.setInvalid();
+        // if(idx==140 || idx == 143){
+        //     pkt_count = inc_pkt.execute(idx);
+        //     if(pkt_count==0){
+        //         hdr.sample.setValid();
+        //         hdr.sample.ingress_port =  (bit<32>)idx;
+        //         ig_tm_md.mcast_grp_a = 1; 
+        //         ig_tm_md.rid = 1;
+        //     }
+        // }
+        // if(idx == 36){
+        //     hdr.sample.setInvalid();
+        //     ig_tm_md.ucast_egress_port = 142;
             
-            hdr.sflow_sample.setValid();
-            hdr.sflow_sample.sample_type = (bit<32>)1;
-            hdr.sflow_sample.sample_length = (bit<32>)80;
-            hdr.sflow_sample.sample_seq_num = (bit<32>)1;
-            hdr.sflow_sample.source_id = (bit<32>)1;
-            hdr.sflow_sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
-            hdr.sflow_sample.sample_pool = (bit<32>)1;
-            hdr.sflow_sample.drops = (bit<32>)0;
-            hdr.sflow_sample.record_count = (bit<32>)1;
-            hdr.sflow_sample.enterprise_format = (bit<32>)1;
-            hdr.sflow_sample.flow_length = (bit<32>)32;
+        //     hdr.sflow_sample.setValid();
+        //     hdr.sflow_sample.sample_type = (bit<32>)1;
+        //     hdr.sflow_sample.sample_length = (bit<32>)80;
+        //     hdr.sflow_sample.sample_seq_num = (bit<32>)1;
+        //     hdr.sflow_sample.source_id = (bit<32>)1;
+        //     hdr.sflow_sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
+        //     hdr.sflow_sample.sample_pool = (bit<32>)1;
+        //     hdr.sflow_sample.drops = (bit<32>)0;
+        //     hdr.sflow_sample.record_count = (bit<32>)1;
+        //     hdr.sflow_sample.enterprise_format = (bit<32>)1;
+        //     hdr.sflow_sample.flow_length = (bit<32>)32;
 
-            hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
-            hdr.sflow_sample.output_if = (bit<32>)0;
-            hdr.sflow_sample.pkt_length = (bit<32>)hdr.ipv4.total_len;
-            hdr.sflow_sample.protocol = (bit<32>)hdr.ipv4.protocol;
-            hdr.sflow_sample.src_ip = (bit<32>)hdr.ipv4.src_addr;
-            hdr.sflow_sample.dst_ip = (bit<32>)hdr.ipv4.dst_addr;
-            hdr.sflow_sample.src_port = (bit<32>)hdr.udp.src_port;
-            hdr.sflow_sample.dst_port = (bit<32>)hdr.udp.dst_port;
-            hdr.sflow_sample.tcp_flags = (bit<32>)0;
-            hdr.sflow_sample.tos = (bit<32>)hdr.ipv4.diffserv;
-            set_port_agent.apply();
-        }        
+        //     hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
+        //     hdr.sflow_sample.output_if = (bit<32>)0;
+        //     hdr.sflow_sample.pkt_length = (bit<32>)hdr.ipv4.total_len;
+        //     hdr.sflow_sample.protocol = (bit<32>)hdr.ipv4.protocol;
+        //     hdr.sflow_sample.src_ip = (bit<32>)hdr.ipv4.src_addr;
+        //     hdr.sflow_sample.dst_ip = (bit<32>)hdr.ipv4.dst_addr;
+        //     hdr.sflow_sample.src_port = (bit<32>)hdr.udp.src_port;
+        //     hdr.sflow_sample.dst_port = (bit<32>)hdr.udp.dst_port;
+        //     hdr.sflow_sample.tcp_flags = (bit<32>)0;
+        //     hdr.sflow_sample.tos = (bit<32>)hdr.ipv4.diffserv;
+        //     set_port_agent.apply();
+        // }        
     }
 }
 
