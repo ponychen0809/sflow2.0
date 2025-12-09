@@ -29,13 +29,13 @@ parser MyIngressParser(packet_in pkt,
     state start {
         tofino_parser.apply(pkt, ig_intr_md);
         transition select(ig_intr_md.ingress_port) {
-            RECIRC_PORT: parse_bridge;   // 從 recirc port 進來
+            RECIRC_PORT: parse_sample;   // 從 recirc port 進來
             default   : parse_ethernet;      // 一般 front-panel port
         }
     }
 
-    state parse_bridge {
-        pkt.extract(hdr.bridge);
+    state parse_sample {
+        pkt.extract(hdr.sample);
         transition parse_raw_128;  // 接著去 parse_raw_128
     }
 
@@ -141,7 +141,7 @@ control MyIngress(
         hdr.ipv4.frag_offset  = 0; 
         hdr.ipv4.ttl          = 64;
         hdr.ipv4.protocol     = 17; 
-        hdr.ipv4.dst_addr = 0x0a0a0308;
+        hdr.ipv4.src_addr = 0x0a0a0308;
         hdr.ipv4.dst_addr = 0x0a0a0303;
         
         hdr.udp.src_port = (bit<16>)8888;
@@ -350,7 +350,7 @@ control MyIngressDeparser(packet_out pkt,
         pkt.emit(hdr.sflow_sample);
         pkt.emit(hdr.raw_record);
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-            mirror.emit<bridge_h>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
+            mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
         }
     }
 }
