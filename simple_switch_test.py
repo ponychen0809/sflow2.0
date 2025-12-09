@@ -199,7 +199,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             [self.ts_key],
             [ts_data]
         )
-        print(f"✅ t_set_ts 初始 timestamp = {init_ts} 已寫入")
+        print("t_set_ts 初始 timestamp = {} 已寫入".format(init_ts))
 
         # =========================================================
         # (6) 啟動背景 threads：
@@ -246,8 +246,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                 [self.ts_key],
                 [ts_data]
             )
-            
-            print("t_set_ts 初始 timestamp = {} 已寫入".format(now_sec))
+            print("更新 t_set_ts.ts = {}".format(now_sec))
             time.sleep(1)
 
     def cleanUp(self):
