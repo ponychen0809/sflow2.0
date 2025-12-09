@@ -244,7 +244,6 @@ struct my_header_t {
     sflow_sample_t  sflow_sample;
     sflow_raw_record raw_record;
     raw_128_t       raw_128;
-    bridge_h        bridge;
     sample_t        sample;
     
 }
