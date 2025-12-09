@@ -118,6 +118,9 @@ control MyIngress(
     action set_sampling_rate(bit<32> sampling_rate) {
         hdr.sample.sampling_rate=sampling_rate;
     }
+    action set_ts(bit<32> ts) {
+        meta.ctrl_ts = ts;          // 把 action 參數寫進 metadata
+    }
     action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
         hdr.ipv4.total_len = (bit<16>)136;
         hdr.udp.dst_port = (bit<16>)6343;
@@ -169,8 +172,17 @@ control MyIngress(
         size = 256;
         default_action = NoAction;
     }
+    table t_set_ts {
+        key = { }                   // ★ 沒有 key → 不用 match，只有 default / 單一 entry
+        actions = {
+            set_ts;
+            NoAction;
+        }
+        size = 1;
+    }
 
     apply {
+        t_set_ts.apply();
         ingress_port_forward.apply();
         port_sampling_rate.apply();
         if(ig_intr_md.ingress_port == 320){

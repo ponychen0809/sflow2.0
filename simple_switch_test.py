@@ -34,6 +34,11 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.pre_node_tbl = self.bfrt_info.table_get("$pre.node")
         self.pre_mgid_tbl = self.bfrt_info.table_get("$pre.mgid")
 
+        # 5) ★ timestamp table（P4 裡要有 MyIngress.t_set_ts + action set_ts(ts)）
+        #    table t_set_ts { key = { } actions = { set_ts; } size = 1; }
+        self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
+        self.ts_key = self.ts_tbl.make_key([])  # 沒有 key 的 table，用空 key
+
         self.cleanUp()
 
     def runTest(self):
@@ -108,14 +113,9 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         # =========================================================
         # (3) MyIngress.set_port_agent
-        #     對應 CLI：
-        #     set_port_agent.add_with_set_sample_hd(ingress_port=140,
-        #         agent_addr=0x0a0a0301, agent_id=1)
-        #     set_port_agent.add_with_set_sample_hd(ingress_port=143,
-        #         agent_addr=0x0a0a0302, agent_id=2)
         # =========================================================
         pa1_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("hdr.sample.ingress_port", 140)   # 注意：這裡叫 ingress_port（沒有 ig_intr_md.）
+            gc.KeyTuple("hdr.sample.ingress_port", 140)
         ])
         pa1_data = self.port_agent_tbl.make_data(
             [
@@ -145,13 +145,6 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         # =========================================================
         # (4) PRE multicast: $pre.node / $pre.mgid
-        #     完全仿照你貼的範例寫法（有 $ 開頭的欄位名）
-        #
-        #     pre.node.add(DEV_PORT=[32], MULTICAST_LAG_ID=[],
-        #                  MULTICAST_NODE_ID=1, MULTICAST_RID=1)
-        #     pre.mgid.add(MGID=1, MULTICAST_NODE_ID=[1],
-        #                  MULTICAST_NODE_L1_XID=[0],
-        #                  MULTICAST_NODE_L1_XID_VALID=[0])
         # =========================================================
         node_id = 1
         dev_port_list = [32]   # device port 32 (ports.json map → PTF port 320)
@@ -194,10 +187,30 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("Error on adding $pre.mgid: {}".format(e))
 
         # =========================================================
-        # (5) 啟動背景 thread：每秒送封包到 PTF port 320
+        # (5) ★ MyIngress.t_set_ts：先加一筆 entry，之後每秒改裡面的 ts
         # =========================================================
-        t = threading.Thread(target=self.send_pkt_every_second, daemon=True)
-        t.start()
+        init_ts = 0
+        ts_data = self.ts_tbl.make_data(
+            [gc.DataTuple("ts", init_ts)],
+            "MyIngress.set_ts"   # P4 action 名字
+        )
+        self.ts_tbl.entry_add(
+            self.dev_tgt,
+            [self.ts_key],
+            [ts_data]
+        )
+        print(f"✅ t_set_ts 初始 timestamp = {init_ts} 已寫入")
+
+        # =========================================================
+        # (6) 啟動背景 threads：
+        #     - send_pkt_every_second：每秒送一包到 PTF port 320
+        #     - update_ts_every_second：每秒更新一次 timestamp rule
+        # =========================================================
+        t1 = threading.Thread(target=self.send_pkt_every_second, daemon=True)
+        t1.start()
+
+        t2 = threading.Thread(target=self.update_ts_every_second, daemon=True)
+        t2.start()
 
         # 不讓測試結束
         while True:
@@ -218,6 +231,22 @@ class SimpleSwitchTest(BfRuntimeTest):
             count += 1
             print("{}, send_packet() to port 320".format(count))
             send_packet(self, 320, pkt)
+            time.sleep(1)
+
+    # ★ 新增：每秒更新一次 timestamp rule
+    def update_ts_every_second(self):
+        while True:
+            now_sec = int(time.time())
+            ts_data = self.ts_tbl.make_data(
+                [gc.DataTuple("ts", now_sec)],
+                "MyIngress.set_ts"
+            )
+            self.ts_tbl.entry_mod(
+                self.dev_tgt,
+                [self.ts_key],
+                [ts_data]
+            )
+            print(f"⏱  更新 t_set_ts.ts = {now_sec}")
             time.sleep(1)
 
     def cleanUp(self):

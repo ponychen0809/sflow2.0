@@ -172,6 +172,7 @@ struct my_metadata_t {
     bit<32> dst_port;
     bit<32> tcp_flag;
     bit<32> tos;
+    bit<32> ctrl_ts;
     MirrorId_t eg_mir_ses;
     bit<1>  recirc;
 }
