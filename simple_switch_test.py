@@ -246,7 +246,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                 [self.ts_key],
                 [ts_data]
             )
-            print(f"⏱  更新 t_set_ts.ts = {now_sec}")
+            print("t_set_ts 初始 timestamp = {} 已寫入".format(now_sec))
             time.sleep(1)
 
     def cleanUp(self):
