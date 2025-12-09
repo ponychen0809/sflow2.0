@@ -364,27 +364,27 @@ parser MyEgressParser(
 
     TofinoEgressParser() tofino_parser;
     
-    state start {
-        tofino_parser.apply(pkt, eg_intr_md);
-        transition parse_bridge;
-    }
+    // state start {
+    //     tofino_parser.apply(pkt, eg_intr_md);
+    //     transition parse_bridge;
+    // }
 
-    state parse_bridge {
-        transition parse_ethernet;
-    }
+    // state parse_bridge {
+    //     transition parse_ethernet;
+    // }
 
-    state parse_ethernet {
-        pkt.extract(hdr.ethernet);
-        transition select(hdr.ethernet.ether_type) {
-            ETHERTYPE_IPV4: parse_ipv4;
-            default: accept;
-        }
-    }
+    // state parse_ethernet {
+    //     pkt.extract(hdr.ethernet);
+    //     transition select(hdr.ethernet.ether_type) {
+    //         ETHERTYPE_IPV4: parse_ipv4;
+    //         default: accept;
+    //     }
+    // }
 
-    state parse_ipv4 {
-        pkt.extract(hdr.ipv4);
-        transition accept;
-    }
+    // state parse_ipv4 {
+    //     pkt.extract(hdr.ipv4);
+    //     transition accept;
+    // }
 }
 
 control MyEgress(
