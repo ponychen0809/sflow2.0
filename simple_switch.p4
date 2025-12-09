@@ -132,7 +132,7 @@ control MyIngress(
         hdr.udp.dst_port = (bit<16>)6343;
         hdr.udp.hdr_length = (bit<16>)228;
         hdr.ipv4.dst_addr = 0x0a0a0303;
-        hdr.udp.checksum = 0;
+        // hdr.udp.checksum = 0;
 
         hdr.sflow_hd.setValid();
         hdr.sflow_hd.version = (bit<32>)5;
@@ -269,46 +269,46 @@ control MyIngressDeparser(packet_out pkt,
                 hdr.ipv4.dst_addr
             });
         }
-        // if(hdr.sflow_hd.isValid()){
-        //     if (hdr.ipv4.isValid() && hdr.udp.isValid() ) {
-        //             hdr.udp.checksum = udp_checksum.update({
-        //             hdr.ipv4.src_addr,
-        //             hdr.ipv4.dst_addr,
-        //             8w0,
-        //             hdr.ipv4.protocol,
-        //             hdr.udp.hdr_length,
-        //             hdr.udp.src_port,
-        //             hdr.udp.dst_port,
-        //             hdr.udp.hdr_length,
-        //             16w0,              // placeholder for checksum
-        //             hdr.sflow_hd.version,
-        //             hdr.sflow_hd.address_type,
-        //             hdr.sflow_hd.agent_addr,
-        //             hdr.sflow_hd.sub_agent_id,
-        //             hdr.sflow_hd.sequence_number,
-        //             hdr.sflow_hd.uptime,
-        //             hdr.sflow_hd.samples,
+        if(hdr.sflow_hd.isValid()){
+            if (hdr.ipv4.isValid() && hdr.udp.isValid() ) {
+                    hdr.udp.checksum = udp_checksum.update({
+                    hdr.ipv4.src_addr,
+                    hdr.ipv4.dst_addr,
+                    8w0,
+                    hdr.ipv4.protocol,
+                    hdr.udp.hdr_length,
+                    hdr.udp.src_port,
+                    hdr.udp.dst_port,
+                    hdr.udp.hdr_length,
+                    16w0,              // placeholder for checksum
+                    hdr.sflow_hd.version,
+                    hdr.sflow_hd.address_type,
+                    hdr.sflow_hd.agent_addr,
+                    hdr.sflow_hd.sub_agent_id,
+                    hdr.sflow_hd.sequence_number,
+                    hdr.sflow_hd.uptime,
+                    hdr.sflow_hd.samples,
 
-        //             hdr.sflow_sample.sample_type,
-        //             hdr.sflow_sample.sample_length,
-        //             hdr.sflow_sample.sample_seq_num,
-        //             hdr.sflow_sample.source_id,
-        //             hdr.sflow_sample.sampling_rate,
-        //             hdr.sflow_sample.sample_pool,
-        //             hdr.sflow_sample.drops,
-        //             hdr.sflow_sample.input_if,
-        //             hdr.sflow_sample.output_if,
-        //             hdr.sflow_sample.record_count,
+                    hdr.sflow_sample.sample_type,
+                    hdr.sflow_sample.sample_length,
+                    hdr.sflow_sample.sample_seq_num,
+                    hdr.sflow_sample.source_id,
+                    hdr.sflow_sample.sampling_rate,
+                    hdr.sflow_sample.sample_pool,
+                    hdr.sflow_sample.drops,
+                    hdr.sflow_sample.input_if,
+                    hdr.sflow_sample.output_if,
+                    hdr.sflow_sample.record_count,
 
-        //             hdr.raw_record.record_type,
-        //             hdr.raw_record.record_length,
-        //             hdr.raw_record.header_protocol,
-        //             hdr.raw_record.frame_length,
-        //             hdr.raw_record.payload_removed,
-        //             hdr.raw_record.header_length,
-        //             hdr.raw_record.header_bytes
-        //         });
-        //     }
+                    hdr.raw_record.record_type,
+                    hdr.raw_record.record_length,
+                    hdr.raw_record.header_protocol,
+                    hdr.raw_record.frame_length,
+                    hdr.raw_record.payload_removed,
+                    hdr.raw_record.header_length,
+                    hdr.raw_record.header_bytes
+                });
+            }
         }
         pkt.emit(hdr.sample);
         pkt.emit(hdr.ethernet);
