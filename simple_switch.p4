@@ -211,7 +211,7 @@ control MyIngress(
             hdr.ethernet.setValid();
             hdr.ipv4.setValid();
             hdr.udp.setValid();
-            
+            ig_dprsr_md.mirror_type  =0;
             ig_tm_md.ucast_egress_port = 142;
             
             hdr.sflow_sample.setValid();
@@ -236,6 +236,7 @@ control MyIngress(
             hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
 
             set_port_agent.apply();
+            hdr.bridge.setInvalid();
             hdr.sample.setInvalid();
         }        
         else{
@@ -410,7 +411,7 @@ control MyEgressDeparser(
         in egress_intrinsic_metadata_for_deparser_t eg_intr_dprs_md) {
 
     apply {
-        pkt.emit(hdr.sample);
+        // pkt.emit(hdr.sample);
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
