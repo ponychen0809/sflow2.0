@@ -364,10 +364,10 @@ parser MyEgressParser(
 
     TofinoEgressParser() tofino_parser;
     
-    // state start {
-    //     tofino_parser.apply(pkt, eg_intr_md);
-    //     transition parse_bridge;
-    // }
+    state start {
+        tofino_parser.apply(pkt, eg_intr_md);
+        default: accept;
+    }
 
     // state parse_bridge {
     //     transition parse_ethernet;
