@@ -208,6 +208,9 @@ control MyIngress(
             }
         }
         if(idx == 36){
+            hdr.ethernet.setValid();
+            hdr.ipv4.setValid();
+            hdr.udp.setValid();
             hdr.sample.setInvalid();
             ig_tm_md.ucast_egress_port = 142;
             
