@@ -129,7 +129,7 @@ control MyIngress(
         hdr.ethernet.src_addr = 0x001122334455;
         hdr.ethernet.dst_addr = 0x001b21bcaad3;
         hdr.ether_type = 0x0800;
-        hdr.ipv4.version=4
+        hdr.ipv4.version=4;
         hdr.ipv4.ihl=0x45;
         hdr.ipv4.diffserv     = 0;
         hdr.ipv4.total_len = (bit<16>)248;
