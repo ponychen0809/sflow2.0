@@ -282,7 +282,7 @@ control MyIngressDeparser(packet_out pkt,
     /* Resource Definitions */
     Checksum() ipv4_checksum;
     Checksum() udp_checksum;
-    Mirror() m;
+    Mirror() mirror;
     apply {
         if(hdr.ipv4.isValid()){
             hdr.ipv4.hdr_checksum = ipv4_checksum.update({
