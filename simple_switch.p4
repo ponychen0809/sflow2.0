@@ -296,7 +296,7 @@ control MyIngressDeparser(packet_out pkt,
                     hdr.raw_record.header_protocol,
                     hdr.raw_record.frame_length,
                     hdr.raw_record.payload_removed,
-                    hdr.raw_record.header_lengt,
+                    hdr.raw_record.header_length,
                     hdr.raw_record.header_bytes
                 });
             }
