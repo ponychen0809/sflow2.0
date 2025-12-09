@@ -254,7 +254,7 @@ control MyIngress(
                 if(pkt_count==0){   //送往recirc port
                     
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
-                    meta.mirror_session = (bit<10>)1;
+                    meta.mirror_session = (bit<10>)26;
                     hdr.bridge.setValid();
                     hdr.bridge.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
                     hdr.bridge.ingress_port = (bit<32>)ig_intr_md.ingress_port;
