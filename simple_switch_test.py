@@ -246,6 +246,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                 [self.ts_key],
                 [ts_data]
             )
+            
             print("t_set_ts 初始 timestamp = {} 已寫入".format(now_sec))
             time.sleep(1)
 
