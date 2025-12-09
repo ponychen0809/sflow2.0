@@ -236,13 +236,16 @@ control MyIngress(
             hdr.sample.setInvalid();
         }        
         else{
+            hdr.sample.setValid();
+            hdr.sample.ingress_port =  (bit<32>)ig_intr_md.ingress_port;
+            hdr.sample.sampling_rate =  0;
             ingress_port_forward.apply();
             port_sampling_rate.apply();
             if(ig_intr_md.ingress_port == 320){
                 ig_tm_md.ucast_egress_port = 142;
             }
             bit<32> pkt_count;
-            hdr.sample.setValid();
+            
             if(idx==140 || idx == 143){
                 pkt_count = inc_pkt.execute(idx);
                 if(pkt_count==0){   //送往recirc port
