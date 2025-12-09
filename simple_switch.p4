@@ -126,12 +126,25 @@ control MyIngress(
         meta.ctrl_ts = ts;          // 把 action 參數寫進 metadata
     }
     action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
+        hdr.ethernet.src_addr = 0x001122334455;
         hdr.ethernet.dst_addr = 0x001b21bcaad3;
+        hdr.ether_type = 0x0800;
+        hdr.ipv4.version=4
+        hdr.ipv4.ihl=0x45;
+        hdr.ipv4.diffserv     = 0;
         hdr.ipv4.total_len = (bit<16>)248;
+        hdr.ipv4.identification = 0; 
+        hdr.ipv4.flags        = 2;
+        hdr.ipv4.frag_offset  = 0; 
+        hdr.ipv4.ttl          = 64;
+        hdr.ipv4.protocol     = 17; 
+        hdr.ipv4.dst_addr = 0x0a0a0308;
+        hdr.ipv4.dst_addr = 0x0a0a0303;
+        
         hdr.udp.src_port = (bit<16>)8888;
         hdr.udp.dst_port = (bit<16>)6343;
         hdr.udp.hdr_length = (bit<16>)228;
-        hdr.ipv4.dst_addr = 0x0a0a0303;
+        
         // hdr.udp.checksum = 0;
 
         hdr.sflow_hd.setValid();
