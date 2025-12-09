@@ -173,7 +173,7 @@ struct my_metadata_t {
     bit<32> tcp_flag;
     bit<32> tos;
     bit<32> ctrl_ts;
-    MirrorId_t eg_mir_ses;
+    MirrorId_t mirror_session;
     bit<1>  recirc;
 }
 
@@ -229,7 +229,10 @@ header sample_t {
     bit<32>  sampling_rate;
     bit<32>  ingress_port;
 }
-
+header bridge_h {
+    bit<32> sampling_rate;
+    bit<32> ingress_port;
+}
 struct my_header_t {
     mirror_h        mirror;
     bridge_h        bridge;
@@ -241,6 +244,7 @@ struct my_header_t {
     sflow_sample_t  sflow_sample;
     sflow_raw_record raw_record;
     raw_128_t       raw_128;
+    bridge_h        bridge;
     sample_t        sample;
     
 }
