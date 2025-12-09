@@ -38,9 +38,15 @@ class SimpleSwitchTest(BfRuntimeTest):
         #    table t_set_ts { key = { } actions = { set_ts; } size = 1; }
         self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
 
+        # 給 0 起點 timestamp 用的起始時間
+        self.start_time = None
+
         self.cleanUp()
 
     def runTest(self):
+
+        # ======== 記錄開始時間，之後 timestamp 會從 0 開始 ========
+        self.start_time = time.time()
 
         # =========================================================
         # (1) MyIngress.ingress_port_forward
@@ -186,7 +192,8 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("Error on adding $pre.mgid: {}".format(e))
 
         # =========================================================
-        # (5) MyIngress.t_set_ts：先設 default entry，之後每秒改裡面的 ts
+        # (5) MyIngress.t_set_ts：先設 default entry = 0，
+        #     之後每秒改成 0,1,2,3,...
         # =========================================================
         init_ts = 0
         ts_data = self.ts_tbl.make_data(
@@ -233,12 +240,14 @@ class SimpleSwitchTest(BfRuntimeTest):
             send_packet(self, 320, pkt)
             time.sleep(1)
 
-    # 每秒更新一次 timestamp rule（覆寫 default entry）
+    # 每秒更新一次 timestamp rule（覆寫 default entry，從 0 開始累加）
     def update_ts_every_second(self):
         while True:
-            now_sec = int(time.time())
+            # 從程式開始時間算起的經過秒數：0,1,2,3,...
+            elapsed_sec = int(time.time() - self.start_time)
+
             ts_data = self.ts_tbl.make_data(
-                [gc.DataTuple("ts", now_sec)],
+                [gc.DataTuple("ts", elapsed_sec)],
                 "MyIngress.set_ts"
             )
 
@@ -247,7 +256,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                 self.dev_tgt,
                 ts_data
             )
-            print("⏱  更新 t_set_ts.ts = {}".format(now_sec))
+            print("⏱  更新 t_set_ts.ts = {}".format(elapsed_sec))
             time.sleep(1)
 
     def cleanUp(self):
