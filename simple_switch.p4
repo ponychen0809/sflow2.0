@@ -128,7 +128,7 @@ control MyIngress(
     action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
         hdr.ethernet.src_addr = 0x001122334455;
         hdr.ethernet.dst_addr = 0x001b21bcaad3;
-        hdr.ether_type = 0x0800;
+        hdr.ethernet.ether_type = 0x0800;
         hdr.ipv4.version=4;
         hdr.ipv4.ihl=0x45;
         hdr.ipv4.diffserv     = 0;
