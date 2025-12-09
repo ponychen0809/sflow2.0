@@ -126,6 +126,8 @@ control MyIngress(
         meta.ctrl_ts = ts;          // 把 action 參數寫進 metadata
     }
     action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
+        hdr.ethernet.dst_addr = 0x001b21bcaad3;
+        hdr.ipv4.total_len = (bit<16>)136;
         hdr.ipv4.total_len = (bit<16>)136;
         hdr.udp.src_port = (bit<16>)8888;
         hdr.udp.dst_port = (bit<16>)6343;
