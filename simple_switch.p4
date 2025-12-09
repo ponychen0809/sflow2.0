@@ -349,13 +349,7 @@ control MyIngressDeparser(packet_out pkt,
         pkt.emit(hdr.sflow_sample);
         pkt.emit(hdr.raw_record);
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-            mirror.emit<bridge_h>(
-                26,
-                {
-                    (bit<32>)hdr.sample.sampling_rate, // sampling_rate
-                    (bit<32>)hdr.sample.ingress_port   // ingress_port
-                }
-            );
+            mirror.emit<bridge_h>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
         }
     }
 }
