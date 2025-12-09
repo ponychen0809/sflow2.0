@@ -242,7 +242,7 @@ control MyIngress(
                 ig_tm_md.ucast_egress_port = 142;
             }
             bit<32> pkt_count;
-            hdr.sample.setInvalid();
+            hdr.sample.setValid();
             if(idx==140 || idx == 143){
                 pkt_count = inc_pkt.execute(idx);
                 if(pkt_count==0){   //送往recirc port
