@@ -33,8 +33,12 @@ parser MyIngressParser(packet_in pkt,
 
     state parse_sample_hdr {
         pkt.extract(hdr.sample);
+        transition parse_raw_128;  // 接著去 parse_raw_128
+    }
 
-        transition parse_ethernet;  // 接著一樣去 parse_ethernet
+    state parse_raw_128 {
+        pkt.extract(hdr.raw_128);   // 直接吃 128 bytes
+        transition accept;
     }
 
     state parse_ethernet {
@@ -193,7 +197,7 @@ control MyIngress(
         hdr.sample.setInvalid();
         if(idx==140 || idx == 143){
             pkt_count = inc_pkt.execute(idx);
-            if(pkt_count==0){
+            if(pkt_count==0){   //送往recirc port
                 hdr.sample.setValid();
                 hdr.sample.ingress_port =  (bit<32>)idx;
                 ig_tm_md.mcast_grp_a = 1; 
@@ -208,25 +212,22 @@ control MyIngress(
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)80;
             hdr.sflow_sample.sample_seq_num = (bit<32>)1;
-            hdr.sflow_sample.source_id = (bit<32>)1;
+            hdr.sflow_sample.source_id = (bit<32>)hdr.sample.ingress_port;
             hdr.sflow_sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
             hdr.sflow_sample.sample_pool = (bit<32>)1;
             hdr.sflow_sample.drops = (bit<32>)0;
-            hdr.sflow_sample.record_count = (bit<32>)1;
-            hdr.sflow_sample.enterprise_format = (bit<32>)1;
-            hdr.sflow_sample.flow_length = (bit<32>)32;
-
             hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
             hdr.sflow_sample.output_if = (bit<32>)0;
-            hdr.sflow_sample.pkt_length = (bit<32>)hdr.ipv4.total_len;
-            hdr.sflow_sample.protocol = (bit<32>)hdr.ipv4.protocol;
-            hdr.sflow_sample.src_ip = (bit<32>)hdr.ipv4.src_addr;
-            hdr.sflow_sample.dst_ip = (bit<32>)hdr.ipv4.dst_addr;
-            hdr.sflow_sample.src_port = (bit<32>)hdr.udp.src_port;
-            hdr.sflow_sample.dst_port = (bit<32>)hdr.udp.dst_port;
-            hdr.sflow_sample.tcp_flags = (bit<32>)0;
-            hdr.sflow_sample.tos = (bit<32>)hdr.ipv4.diffserv;
-            set_port_agent.apply();
+            hdr.sflow_sample.record_count = (bit<32>)1;
+            
+            hdr.raw_record.setValid();
+            hdr.raw_record.record_type = (bit<32>)1;
+            hdr.raw_record.record_length = (bit<32>)144;
+            hdr.raw_record.header_protocol = (bit<32>)1;
+            hdr.raw_record.frame_length = (bit<32>)558;
+            hdr.raw_record.payload_removed = (bit<32>)4;
+            hdr.raw_record.header_length = (bit<32>)128;
+            hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
         }        
     }
 }
@@ -290,16 +291,13 @@ control MyIngressDeparser(packet_out pkt,
                     hdr.sflow_sample.input_if,
                     hdr.sflow_sample.output_if,
                     hdr.sflow_sample.record_count,
-                    hdr.sflow_sample.enterprise_format,
-                    hdr.sflow_sample.flow_length,
-                    hdr.sflow_sample.pkt_length,
-                    hdr.sflow_sample.protocol,
-                    hdr.sflow_sample.src_ip,
-                    hdr.sflow_sample.dst_ip,
-                    hdr.sflow_sample.src_port,
-                    hdr.sflow_sample.dst_port,
-                    hdr.sflow_sample.tcp_flags,
-                    hdr.sflow_sample.tos
+                    hdr.raw_record.record_type,
+                    hdr.raw_record.record_length,
+                    hdr.raw_record.header_protocol,
+                    hdr.raw_record.frame_length,
+                    hdr.raw_record.payload_removed,
+                    hdr.raw_record.header_lengt,
+                    hdr.raw_record.header_bytes
                 });
             }
         }

@@ -212,18 +212,19 @@ header sflow_sample_t {
     bit<32> input_if;
     bit<32> output_if;
     bit<32> record_count;
-    bit<32> enterprise_format;
-    bit<32> flow_length;
-    bit<32> pkt_length;
-    bit<32> protocol;
-    bit<32> src_ip;
-    bit<32> dst_ip;
-    bit<32> src_port;
-    bit<32> dst_port;
-    bit<32> tcp_flags;
-    bit<32> tos;
 }
-
+header sflow_raw_record {
+    bit<32> record_type;
+    bit<32> record_length;
+    bit<32> header_protocol;
+    bit<32> frame_length;
+    bit<32> payload_removed;
+    bit<32> header_length;
+    bit<1024> header_bytes;
+}
+header raw_128_t {
+    bit<1024> data;   // 128 bytes = 1024 bits
+}
 header sample_t {
     bit<32>  sampling_rate;
     bit<32>  ingress_port;
@@ -238,7 +239,10 @@ struct my_header_t {
     udp_h           udp;
     sflow_t         sflow_hd;
     sflow_sample_t  sflow_sample;
+    sflow_raw_record raw_record;
+    raw_128_t       raw_128;
     sample_t        sample;
+    
 }
 struct empty_header_t {}
 
