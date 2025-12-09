@@ -203,6 +203,7 @@ control MyIngress(
 
     apply {
         t_set_ts.apply();
+        bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         if(idx == 36){
             hdr.ethernet.setValid();
             hdr.ipv4.setValid();
@@ -239,7 +240,7 @@ control MyIngress(
             if(ig_intr_md.ingress_port == 320){
                 ig_tm_md.ucast_egress_port = 142;
             }
-            bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
+            
             bit<32> pkt_count;
             hdr.sample.setInvalid();
             if(idx==140 || idx == 143){
