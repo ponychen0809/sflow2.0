@@ -129,10 +129,10 @@ control MyIngress(
         hdr.ethernet.src_addr = 0x001122334455;
         hdr.ethernet.dst_addr = 0x001b21bcaad3;
         hdr.ethernet.ether_type = 0x0800;
-        hdr.ipv4.version=(bit<4>)4;
-        hdr.ipv4.ihl=(bit<4>)0x45;
+        hdr.ipv4.version=4;
+        hdr.ipv4.ihl=0x45;
         hdr.ipv4.diffserv     = 0;
-        hdr.ipv4.total_len = (bit<16>)248;
+        hdr.ipv4.total_len = 248;
         hdr.ipv4.identification = 0; 
         hdr.ipv4.flags        = 2;
         hdr.ipv4.frag_offset  = 0; 
@@ -229,7 +229,7 @@ control MyIngress(
             
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
-            hdr.sflow_sample.sample_length = (bit<32>)80;
+            hdr.sflow_sample.sample_length = (bit<32>)184;
             hdr.sflow_sample.sample_seq_num = (bit<32>)1;
             hdr.sflow_sample.source_id = (bit<32>)hdr.sample.ingress_port;
             hdr.sflow_sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
