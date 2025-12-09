@@ -18,19 +18,19 @@ def read_u32(raw, offset):
 def detect_ipv4_offset(raw):
     """
     嘗試偵測 IPv4 header 在封包中的 offset。
-
-    1) Linux cooked capture (SLL)：前 20 bytes 是 SLL header，IPv4 通常從 20 開始，
-       第一個 byte 類似 0x45 (version=4, IHL=5)。
-    2) Ethernet II：前 14 bytes 是 Ethernet header，
-       byte[12:14] = 0x0800 表示 IPv4，IPv4 從 14 開始。
+    同時支援 Ethernet II 與 Linux SLL。
     """
-    # Linux SLL
-    if len(raw) > 21 and (raw[20] >> 4) == 4:
-        return 20
 
-    # Ethernet II
-    if len(raw) > 14 and raw[12] == 0x08 and raw[13] == 0x00 and (raw[14] >> 4) == 4:
+    # 1) 優先判斷 Ethernet II：
+    #    [12:14] = 0x0800 表示 IPv4，IPv4 從 14 開始
+    if len(raw) >= 34 and raw[12] == 0x08 and raw[13] == 0x00 and (raw[14] >> 4) == 4:
         return 14
+
+    # 2) 再判斷 Linux SLL（你之前 pcap 檔那種）：
+    #    SLL 的 protocol 在 [14:16]，一樣 0x0800
+    #    IPv4 header 通常從 20 開始
+    if len(raw) >= 40 and raw[14] == 0x08 and raw[15] == 0x00 and (raw[20] >> 4) == 4:
+        return 20
 
     return None
 
@@ -192,7 +192,7 @@ def parse_counter_sample(raw, offset):
     """
     用於解析：
       - type = 2  Counter Sample
-      - type = 4  Expanded Counter Sample (目前當一般 Counter Sample 看，頭一樣先 seq/source_id/rec_count)
+      - type = 4  Expanded Counter Sample
 
     並且對常見的 counter record：
       - rec_type = 1 → ifCounters
