@@ -191,7 +191,7 @@ header bridge_h {
     
 }
 
-header sflow_t {
+header sflow_t {  //28byte
     bit<32> version;
     bit<32> address_type;
     bit<32> agent_addr;
@@ -201,7 +201,7 @@ header sflow_t {
     bit<32> samples;
 }
 
-header sflow_sample_t {
+header sflow_sample_t { //40byte
     bit<32> sample_type;
     bit<32> sample_length;
     bit<32> sample_seq_num;
@@ -213,7 +213,7 @@ header sflow_sample_t {
     bit<32> output_if;
     bit<32> record_count;
 }
-header sflow_raw_record {
+header sflow_raw_record { //152byte
     bit<32> record_type;
     bit<32> record_length;
     bit<32> header_protocol;

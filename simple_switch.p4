@@ -127,8 +127,9 @@ control MyIngress(
     }
     action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
         hdr.ipv4.total_len = (bit<16>)136;
+        hdr.udp.src_port = (bit<16>)8888;
         hdr.udp.dst_port = (bit<16>)6343;
-        hdr.udp.hdr_length = (bit<16>)116;
+        hdr.udp.hdr_length = (bit<16>)220;
         hdr.ipv4.dst_addr = 0x0a0a0303;
         
         hdr.sflow_hd.setValid();
@@ -137,7 +138,7 @@ control MyIngress(
         hdr.sflow_hd.agent_addr = (bit<32>)agent_addr;
         hdr.sflow_hd.sub_agent_id = (bit<32>)agent_id;
         hdr.sflow_hd.sequence_number = (bit<32>)5;
-        hdr.sflow_hd.uptime = (bit<32>)12345;
+        hdr.sflow_hd.uptime = (bit<32>)meta.ctrl_ts;
         hdr.sflow_hd.samples = (bit<32>)1;  
     }
 
@@ -228,6 +229,8 @@ control MyIngress(
             hdr.raw_record.payload_removed = (bit<32>)4;
             hdr.raw_record.header_length = (bit<32>)128;
             hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
+
+            set_port_agent.apply();
         }        
     }
 }
@@ -291,6 +294,7 @@ control MyIngressDeparser(packet_out pkt,
                     hdr.sflow_sample.input_if,
                     hdr.sflow_sample.output_if,
                     hdr.sflow_sample.record_count,
+
                     hdr.raw_record.record_type,
                     hdr.raw_record.record_length,
                     hdr.raw_record.header_protocol,
@@ -308,6 +312,7 @@ control MyIngressDeparser(packet_out pkt,
         pkt.emit(hdr.udp);
         pkt.emit(hdr.sflow_hd);
         pkt.emit(hdr.sflow_sample);
+        pkt.emit(hdr.raw_record);
     }
 }
 
