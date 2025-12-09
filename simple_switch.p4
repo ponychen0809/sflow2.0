@@ -203,23 +203,6 @@ control MyIngress(
 
     apply {
         t_set_ts.apply();
-        ingress_port_forward.apply();
-        port_sampling_rate.apply();
-        if(ig_intr_md.ingress_port == 320){
-            ig_tm_md.ucast_egress_port = 142;
-        }
-        bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
-        bit<32> pkt_count;
-        hdr.sample.setInvalid();
-        if(idx==140 || idx == 143){
-            pkt_count = inc_pkt.execute(idx);
-            if(pkt_count==0){   //送往recirc port
-                hdr.sample.setValid();
-                hdr.sample.ingress_port =  (bit<32>)idx;
-                ig_tm_md.mcast_grp_a = 1; 
-                ig_tm_md.rid = 1;
-            }
-        }
         if(idx == 36){
             hdr.ethernet.setValid();
             hdr.ipv4.setValid();
@@ -250,6 +233,27 @@ control MyIngress(
 
             set_port_agent.apply();
         }        
+        else{
+            ingress_port_forward.apply();
+            port_sampling_rate.apply();
+            if(ig_intr_md.ingress_port == 320){
+                ig_tm_md.ucast_egress_port = 142;
+            }
+            bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
+            bit<32> pkt_count;
+            hdr.sample.setInvalid();
+            if(idx==140 || idx == 143){
+                pkt_count = inc_pkt.execute(idx);
+                if(pkt_count==0){   //送往recirc port
+                    hdr.sample.setValid();
+                    hdr.sample.ingress_port =  (bit<32>)idx;
+                    ig_tm_md.mcast_grp_a = 1; 
+                    ig_tm_md.rid = 1;
+                }
+            }
+        }
+        
+        
     }
 }
 
