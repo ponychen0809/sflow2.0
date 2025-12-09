@@ -34,10 +34,9 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.pre_node_tbl = self.bfrt_info.table_get("$pre.node")
         self.pre_mgid_tbl = self.bfrt_info.table_get("$pre.mgid")
 
-        # 5) ★ timestamp table（P4 裡要有 MyIngress.t_set_ts + action set_ts(ts)）
+        # 5) timestamp table（P4 裡要有 MyIngress.t_set_ts + action set_ts(ts)）
         #    table t_set_ts { key = { } actions = { set_ts; } size = 1; }
         self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
-        self.ts_key = self.ts_tbl.make_key([])  # 沒有 key 的 table，用空 key
 
         self.cleanUp()
 
@@ -187,19 +186,20 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("Error on adding $pre.mgid: {}".format(e))
 
         # =========================================================
-        # (5) ★ MyIngress.t_set_ts：先加一筆 entry，之後每秒改裡面的 ts
+        # (5) MyIngress.t_set_ts：先設 default entry，之後每秒改裡面的 ts
         # =========================================================
         init_ts = 0
         ts_data = self.ts_tbl.make_data(
             [gc.DataTuple("ts", init_ts)],
             "MyIngress.set_ts"   # P4 action 名字
         )
-        self.ts_tbl.entry_add(
+
+        # 無 key table：用 default_entry_set 寫入
+        self.ts_tbl.default_entry_set(
             self.dev_tgt,
-            [self.ts_key],
-            [ts_data]
+            ts_data
         )
-        print("t_set_ts 初始 timestamp = {} 已寫入".format(init_ts))
+        print("✅ t_set_ts 初始 timestamp = {} 已寫入".format(init_ts))
 
         # =========================================================
         # (6) 啟動背景 threads：
@@ -233,7 +233,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             send_packet(self, 320, pkt)
             time.sleep(1)
 
-    # ★ 新增：每秒更新一次 timestamp rule
+    # 每秒更新一次 timestamp rule（覆寫 default entry）
     def update_ts_every_second(self):
         while True:
             now_sec = int(time.time())
@@ -241,12 +241,13 @@ class SimpleSwitchTest(BfRuntimeTest):
                 [gc.DataTuple("ts", now_sec)],
                 "MyIngress.set_ts"
             )
-            self.ts_tbl.entry_mod(
+
+            # 無 key table：一樣用 default_entry_set 覆蓋
+            self.ts_tbl.default_entry_set(
                 self.dev_tgt,
-                [self.ts_key],
-                [ts_data]
+                ts_data
             )
-            print("更新 t_set_ts.ts = {}".format(now_sec))
+            print("⏱  更新 t_set_ts.ts = {}".format(now_sec))
             time.sleep(1)
 
     def cleanUp(self):
