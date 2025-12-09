@@ -366,7 +366,7 @@ parser MyEgressParser(
     
     state start {
         tofino_parser.apply(pkt, eg_intr_md);
-        default: accept;
+        transition accept;
     }
 
     // state parse_bridge {
