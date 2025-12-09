@@ -177,19 +177,7 @@ struct my_metadata_t {
     bit<1>  recirc;
 }
 
-header bridge_h {
-    bit<32> ingress_port;
-    bit<32> egress_port;
-    bit<32> pkt_len;
-    bit<32> protocol;
-    bit<32> src_ip;
-    bit<32> dst_ip;
-    bit<32> src_port;
-    bit<32> dst_port;
-    bit<32> tcp_flag;
-    bit<32> tos;
-    
-}
+
 
 header sflow_t {  //28byte
     bit<32> version;
