@@ -352,8 +352,8 @@ control MyIngressDeparser(packet_out pkt,
             mirror.emit<bridge_h>(
                 26,
                 {
-                    (bit<32>)hdr.sample.sampling_rate,                               // sampling_rate (舉例)
-                    (bit<32>)ig_intr_md.ingress_port   // ingress_port
+                    (bit<32>)hdr.sample.sampling_rate, // sampling_rate
+                    (bit<32>)hdr.sample.ingress_port   // ingress_port
                 }
             );
         }
