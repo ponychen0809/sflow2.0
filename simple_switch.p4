@@ -28,18 +28,22 @@ parser MyIngressParser(packet_in pkt,
     TofinoIngressParser() tofino_parser;
     state start {
         tofino_parser.apply(pkt,hdr, ig_intr_md);
-        transition select(ig_intr_md.resubmit_flag) {
-            1 : parse_raw_128;   // 從 recirc port 進來
-            0 : parse_ethernet;      // 一般 front-panel port
+        transition select(ig_intr_md.ingress_port) {
+            RECIRC_PORT : parse_raw_128;   // 從 recirc port 進來
+            default : parse_ethernet;      // 一般 front-panel port
         }
     }
-
+    // state parse_sample {
+    //     pkt.extract(hdr.raw_128);   // 直接吃 128 bytes
+    //     transition accept;
+    // }
     state parse_raw_128 {
         pkt.extract(hdr.raw_128);   // 直接吃 128 bytes
         transition accept;
     }
 
     state parse_ethernet {
+        pkt.advance(PORT_METADATA_SIZE);
         pkt.extract(hdr.ethernet);
         transition select(hdr.ethernet.ether_type) {
             ETHERTYPE_IPV4: parse_ipv4;
@@ -245,14 +249,14 @@ control MyIngress(
             if(idx==140 || idx == 143){
                 pkt_count = inc_pkt.execute(idx);
                 if(pkt_count==0){   //送往recirc port
-                    hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
-                    meta.recirc = 1;
-                    // resubmit.emit<sample_t>({ hdr.sample.sampling_rate, ig_intr_md.ingress_port });
-                    // ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
-                    // meta.mirror_session = (bit<10>)26;
-                    // hdr.sample.setValid();
-                    // hdr.sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
                     // hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
+                    // meta.recirc = 1;
+                    resubmit.emit<sample_t>({ hdr.sample.sampling_rate, ig_intr_md.ingress_port });
+                    ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
+                    meta.mirror_session = (bit<10>)26;
+                    hdr.sample.setValid();
+                    hdr.sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
+                    hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }else{
                     meta.recirc = 0;
                 }
@@ -334,13 +338,13 @@ control MyIngressDeparser(packet_out pkt,
                 });
             }
         }
-        // if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-        //     mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
+        if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
+            mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
 
-        // }'
-        if (meta.recirc == 1) {
-            resubmit.emit<sample_t>(hdr.sample);
         }
+        // if (meta.recirc == 1) {
+        //     resubmit.emit<sample_t>(hdr.sample);
+        // }
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
