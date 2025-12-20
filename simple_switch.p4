@@ -213,7 +213,11 @@ control MyIngress(
             hdr.udp.setValid();
             ig_dprsr_md.mirror_type  =0;
             // ig_tm_md.ucast_egress_port = 142;
-            
+            if (hdr.sample.ingress_port == 140) {
+                ig_tm_md.ucast_egress_port = 142;
+            }else{
+                ig_tm_md.ucast_egress_port = 38;
+            }
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)184;
@@ -234,14 +238,10 @@ control MyIngress(
             hdr.raw_record.payload_removed = (bit<32>)4;
             hdr.raw_record.header_length = (bit<32>)128;
             hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
-
+            
             set_port_agent.apply();
             // // hdr.sample.setInvalid();
-            if (hdr.sample.ingress_port == 140) {
-                ig_tm_md.ucast_egress_port = 142;
-            }else{
-                ig_tm_md.ucast_egress_port = 38;
-            }
+            
         }        
         else{
             hdr.sample.setValid();
