@@ -36,7 +36,7 @@ parser MyIngressParser(packet_in pkt,
 
     state parse_sample {
         pkt.extract(hdr.sample);
-
+        pkt.extract(hdr.sample);
         transition parse_raw_128;  // 接著去 parse_raw_128
     }
 
