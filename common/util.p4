@@ -35,7 +35,7 @@ parser TofinoIngressParser(
 
     state parse_resubmit {
         pkt.extract(hdr.sample);        
-        pkt.advance(PORT_METADATA_SIZE);                
+        pkt.advance(56);                
         transition accept;
     }
 
