@@ -398,7 +398,7 @@ control MyEgress(
     }
 
     apply {
-        if (eg_intr_md_from_prsr.mirror_type !=0){
+        if (eg_intr_dprs_md.mirror_type !=0){
                     hdr.sample.setValid();
         }else{
             hdr.sample.setInvalid();
