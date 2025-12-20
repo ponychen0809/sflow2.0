@@ -253,8 +253,8 @@ control MyIngress(
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    hdr.sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
-                    hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
+                    hdr.sample.sampling_rate = (bit<32>)123;
+                    hdr.sample.ingress_port = (bit<32>)456;
                 }
             }
         }
@@ -334,7 +334,10 @@ control MyIngressDeparser(packet_out pkt,
                 });
             }
         }
-        
+        if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
+        // 先把 mirror copy 丟出去，並在 mirror copy 前面 prepend sample_t
+        mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
+    }
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
@@ -342,9 +345,9 @@ control MyIngressDeparser(packet_out pkt,
         pkt.emit(hdr.sflow_hd);
         pkt.emit(hdr.sflow_sample);
         pkt.emit(hdr.raw_record);
-        if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-            mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
-        }
+        // if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
+        //     mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
+        // }
     }
 }
 
