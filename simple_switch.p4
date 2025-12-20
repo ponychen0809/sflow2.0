@@ -238,7 +238,7 @@ control MyIngress(
             // set_port_agent.apply();
             // // hdr.sample.setInvalid();
             if (hdr.sample.magic != 0xABCD) {
-                ig_tm_md.ucast_egress_port = 37
+                ig_tm_md.ucast_egress_port = 37;
             }
         }        
         else{
