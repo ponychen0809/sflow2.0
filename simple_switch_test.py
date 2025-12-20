@@ -88,7 +88,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             [k1, k2, k3, k4],
             [d1, d2, d3, d4]
         )
-        print("✅ ingress_port_forward 規則已寫入")
+        print("ingress_port_forward 規則已寫入")
 
         # =========================================================
         # (2) MyIngress.port_sampling_rate
@@ -114,7 +114,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             [ks1, ks2],
             [ds1, ds2]
         )
-        print("✅ port_sampling_rate 規則已寫入")
+        print("port_sampling_rate 規則已寫入")
 
         # =========================================================
         # (3) MyIngress.set_port_agent
@@ -146,7 +146,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             [pa1_key, pa2_key],
             [pa1_data, pa2_data]
         )
-        print("✅ set_port_agent 規則已寫入")
+        print("set_port_agent 規則已寫入")
 
         # =========================================================
         # (4) PRE multicast: $pre.node / $pre.mgid
@@ -167,7 +167,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                     gc.DataTuple('$DEV_PORT', int_arr_val=dev_port_list)
                 ])]
             )
-            print("✅ $pre.node 已寫入")
+            print("$pre.node 已寫入")
         except Exception as e:
             print("Error on adding $pre.node: {}".format(e))
 
@@ -187,7 +187,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                                  int_arr_val=[0])
                 ])]
             )
-            print("✅ $pre.mgid 已寫入")
+            print("$pre.mgid 已寫入")
         except Exception as e:
             print("Error on adding $pre.mgid: {}".format(e))
 
@@ -206,7 +206,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             self.dev_tgt,
             ts_data
         )
-        print("✅ t_set_ts 初始 timestamp = {} 已寫入".format(init_ts))
+        print("t_set_ts 初始 timestamp = {} 已寫入".format(init_ts))
 
         # =========================================================
         # (6) 啟動背景 threads：
@@ -242,6 +242,7 @@ class SimpleSwitchTest(BfRuntimeTest):
 
     # 每秒更新一次 timestamp rule（覆寫 default entry，從 0 開始累加）
     def update_ts_every_second(self):
+        print("start upate timestamp")
         while True:
             # 從程式開始時間算起的經過秒數：0,1,2,3,...
             elapsed_sec = int(time.time() - self.start_time)
@@ -256,7 +257,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                 self.dev_tgt,
                 ts_data
             )
-            print("⏱  更新 t_set_ts.ts = {}".format(elapsed_sec))
+            # print("更新 t_set_ts.ts = {}".format(elapsed_sec))
             time.sleep(1)
 
     def cleanUp(self):
