@@ -398,7 +398,7 @@ control MyEgress(
     }
 
     apply {
-        eg_intr_md.egress_port=39;
+        // eg_intr_md.egress_port=39;
         if (eg_intr_dprs_md.mirror_type !=0){
             hdr.sample.setValid();
         }else{
