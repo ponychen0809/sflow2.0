@@ -20,9 +20,10 @@
 
 #ifndef _UTIL_
 #define _UTIL_
-
+#include "headers.p4"
 parser TofinoIngressParser(
         packet_in pkt,
+        out my_header_t hdr,
         out ingress_intrinsic_metadata_t ig_intr_md) {
     state start {
         pkt.extract(ig_intr_md);
@@ -33,8 +34,9 @@ parser TofinoIngressParser(
     }
 
     state parse_resubmit {
-        // Parse resubmitted packet here.
-        transition reject;
+        pkt.extract(hdr.sample);        
+        pkt.advance(64);                
+        transition accept;
     }
 
     state parse_port_metadata {
