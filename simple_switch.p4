@@ -35,8 +35,7 @@ parser MyIngressParser(packet_in pkt,
     }
 
     state parse_sample {
-        // pkt.extract(hdr.sample);
-        pkt.advance(8);
+        pkt.extract(hdr.sample);
 
         transition parse_raw_128;  // 接著去 parse_raw_128
     }
@@ -255,7 +254,7 @@ control MyIngress(
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    hdr.sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
+                    hdr.sample.sampling_rate = (bit<32>)123;
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
