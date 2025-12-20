@@ -236,13 +236,10 @@ control MyIngress(
             hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
 
             set_port_agent.apply();
-            hdr.bridge.setInvalid();
             hdr.sample.setInvalid();
         }        
         else{
             hdr.sample.setValid();
-            // hdr.sample.ingress_port =  (bit<32>)ig_intr_md.ingress_port;
-            // hdr.sample.sampling_rate =  0;
             ingress_port_forward.apply();
             port_sampling_rate.apply();
             if(ig_intr_md.ingress_port == 320){
@@ -259,10 +256,6 @@ control MyIngress(
                     hdr.sample.setValid();
                     hdr.sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
-                    // hdr.sample.setValid();
-                    // hdr.sample.ingress_port =  (bit<32>)idx;
-                    // ig_tm_md.mcast_grp_a = 1; 
-                    // ig_tm_md.rid = 1;
                 }
             }
         }
@@ -348,6 +341,7 @@ control MyIngressDeparser(packet_out pkt,
         pkt.emit(hdr.udp);
         pkt.emit(hdr.sflow_hd);
         pkt.emit(hdr.sflow_sample);
+        pkt.emit(hdr.sample)
         pkt.emit(hdr.raw_record);
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
             mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
@@ -367,7 +361,7 @@ parser MyEgressParser(
     
     state start {
         tofino_parser.apply(pkt, eg_intr_md);
-        transition parse_bridge;
+        transition accept;
     }
 
     state parse_bridge {
