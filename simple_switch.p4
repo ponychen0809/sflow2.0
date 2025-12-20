@@ -277,6 +277,7 @@ control MyIngressDeparser(packet_out pkt,
     Checksum() ipv4_checksum;
     Checksum() udp_checksum;
     Mirror() mirror;
+    Resubmit() resubmit;
     apply {
         if(hdr.ipv4.isValid()){
             hdr.ipv4.hdr_checksum = ipv4_checksum.update({
@@ -336,6 +337,7 @@ control MyIngressDeparser(packet_out pkt,
         }
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
             mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
+
         }
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
