@@ -202,7 +202,7 @@ control MyIngress(
     apply {
         t_set_ts.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
-        if(idx == 36){
+        if(ig_intr_md.resubmit_flag == 1){
             hdr.ethernet.setValid();
             hdr.ipv4.setValid();
             hdr.udp.setValid();
