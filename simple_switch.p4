@@ -236,12 +236,7 @@ control MyIngress(
             hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
 
             set_port_agent.apply();
-            // // hdr.sample.setInvalid();
-            // if (hdr.sample.magic == 0xABCD) {
-            //     ig_tm_md.ucast_egress_port = 38;
-            // }else{
-            //     ig_tm_md.ucast_egress_port = 37;
-            // }
+
         }        
         else{
             hdr.sample.setValid();
@@ -404,12 +399,12 @@ control MyEgress(
 
     apply {
         // eg_intr_md.egress_port=39;
-        if (eg_intr_dprs_md.mirror_type !=0){
-            hdr.sample.setValid();
-            hdr.ethernet.src_addr = 0xaaaaaaaaaaaa;
-        }else{
-            hdr.sample.setInvalid();
-        }
+        // if (eg_intr_dprs_md.mirror_type !=0){
+        //     hdr.sample.setValid();
+        //     hdr.ethernet.src_addr = 0xaaaaaaaaaaaa;
+        // }else{
+        //     hdr.sample.setInvalid();
+        // }
     }
 }
 
@@ -420,7 +415,7 @@ control MyEgressDeparser(
         in egress_intrinsic_metadata_for_deparser_t eg_intr_dprs_md) {
 
     apply {
-        pkt.emit(hdr.sample);
+        // pkt.emit(hdr.sample);
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
