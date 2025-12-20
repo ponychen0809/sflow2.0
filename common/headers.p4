@@ -174,6 +174,7 @@ struct my_metadata_t {
     bit<32> tos;
     bit<32> ctrl_ts;
     MirrorId_t mirror_session;
+    bit<32> sample_ing_port;
     bit<1>  recirc;
 }
 
