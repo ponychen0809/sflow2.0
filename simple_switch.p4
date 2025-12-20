@@ -254,7 +254,7 @@ control MyIngress(
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    hdr.sample.sampling_rate = (bit<32>)123;
+                    hdr.sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
@@ -398,6 +398,11 @@ control MyEgress(
     }
 
     apply {
+        if (eg_intr_md_from_prsr.mirror_type !=0){
+                    hdr.sample.setValid();
+        }else{
+            hdr.sample.setInvalid();
+        }
     }
 }
 
@@ -408,7 +413,7 @@ control MyEgressDeparser(
         in egress_intrinsic_metadata_for_deparser_t eg_intr_dprs_md) {
 
     apply {
-        // pkt.emit(hdr.sample);
+        pkt.emit(hdr.sample);
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
