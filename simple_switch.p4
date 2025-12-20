@@ -235,7 +235,7 @@ control MyIngress(
             // hdr.raw_record.header_length = (bit<32>)128;
             // hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
 
-            // set_port_agent.apply();
+            set_port_agent.apply();
             // // hdr.sample.setInvalid();
             if (hdr.sample.magic != 0xABCD) {
                 ig_tm_md.ucast_egress_port = 37;
