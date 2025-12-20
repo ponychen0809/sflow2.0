@@ -363,7 +363,7 @@ parser MyEgressParser(
     
     state start {
         tofino_parser.apply(pkt, eg_intr_md);
-        transition accept;
+        transition parse_bridge;
     }
 
     state parse_bridge {
