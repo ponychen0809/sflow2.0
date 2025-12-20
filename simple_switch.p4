@@ -208,35 +208,40 @@ control MyIngress(
         t_set_ts.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         if(ig_intr_md.ingress_port == 36){
-            hdr.ethernet.setValid();
-            hdr.ipv4.setValid();
-            hdr.udp.setValid();
-            ig_dprsr_md.mirror_type  =0;
-            ig_tm_md.ucast_egress_port = 142;
+            // hdr.ethernet.setValid();
+            // hdr.ipv4.setValid();
+            // hdr.udp.setValid();
+            // ig_dprsr_md.mirror_type  =0;
+            // ig_tm_md.ucast_egress_port = 142;
             
-            hdr.sflow_sample.setValid();
-            hdr.sflow_sample.sample_type = (bit<32>)1;
-            hdr.sflow_sample.sample_length = (bit<32>)184;
-            hdr.sflow_sample.sample_seq_num = (bit<32>)1;
-            hdr.sflow_sample.source_id = (bit<32>)hdr.sample.ingress_port;
-            hdr.sflow_sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
-            hdr.sflow_sample.sample_pool = (bit<32>)1;
-            hdr.sflow_sample.drops = (bit<32>)0;
-            hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
-            hdr.sflow_sample.output_if = (bit<32>)0;
-            hdr.sflow_sample.record_count = (bit<32>)1;
+            // hdr.sflow_sample.setValid();
+            // hdr.sflow_sample.sample_type = (bit<32>)1;
+            // hdr.sflow_sample.sample_length = (bit<32>)184;
+            // hdr.sflow_sample.sample_seq_num = (bit<32>)1;
+            // hdr.sflow_sample.source_id = (bit<32>)hdr.sample.ingress_port;
+            // hdr.sflow_sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
+            // hdr.sflow_sample.sample_pool = (bit<32>)1;
+            // hdr.sflow_sample.drops = (bit<32>)0;
+            // hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
+            // hdr.sflow_sample.output_if = (bit<32>)0;
+            // hdr.sflow_sample.record_count = (bit<32>)1;
             
-            hdr.raw_record.setValid();
-            hdr.raw_record.record_type = (bit<32>)1;
-            hdr.raw_record.record_length = (bit<32>)144;
-            hdr.raw_record.header_protocol = (bit<32>)1;
-            hdr.raw_record.frame_length = (bit<32>)558;
-            hdr.raw_record.payload_removed = (bit<32>)4;
-            hdr.raw_record.header_length = (bit<32>)128;
-            hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
+            // hdr.raw_record.setValid();
+            // hdr.raw_record.record_type = (bit<32>)1;
+            // hdr.raw_record.record_length = (bit<32>)144;
+            // hdr.raw_record.header_protocol = (bit<32>)1;
+            // hdr.raw_record.frame_length = (bit<32>)558;
+            // hdr.raw_record.payload_removed = (bit<32>)4;
+            // hdr.raw_record.header_length = (bit<32>)128;
+            // hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
 
             set_port_agent.apply();
-
+            // // hdr.sample.setInvalid();
+            if (hdr.sample.magic == 0xABCD) {
+                ig_tm_md.ucast_egress_port = 38;
+            }else{
+                ig_tm_md.ucast_egress_port = 37;
+            }
         }        
         else{
             hdr.sample.setValid();
@@ -253,9 +258,8 @@ control MyIngress(
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    hdr.sample.sampling_rate = 0x11223344;
-                    hdr.sample.ingress_port = 0x55667788;
-                    // hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
+                    hdr.sample.magic = 0xABCD;
+                    hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
         }
@@ -336,10 +340,8 @@ control MyIngressDeparser(packet_out pkt,
             }
         }
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-            hdr.sample.sampling_rate = 0x11223344;
-            hdr.sample.ingress_port = 32w0x55667788;
         // 先把 mirror copy 丟出去，並在 mirror copy 前面 prepend sample_t
-            mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
+        mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
     }
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
@@ -401,12 +403,12 @@ control MyEgress(
 
     apply {
         // eg_intr_md.egress_port=39;
-        // if (eg_intr_dprs_md.mirror_type !=0){
-        //     hdr.sample.setValid();
-        //     hdr.ethernet.src_addr = 0xaaaaaaaaaaaa;
-        // }else{
-        //     hdr.sample.setInvalid();
-        // }
+        if (eg_intr_dprs_md.mirror_type !=0){
+            hdr.sample.setValid();
+            hdr.ethernet.src_addr = 0xaaaaaaaaaaaa;
+        }else{
+            hdr.sample.setInvalid();
+        }
     }
 }
 
@@ -417,7 +419,7 @@ control MyEgressDeparser(
         in egress_intrinsic_metadata_for_deparser_t eg_intr_dprs_md) {
 
     apply {
-        // pkt.emit(hdr.sample);
+        pkt.emit(hdr.sample);
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
