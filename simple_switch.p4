@@ -218,11 +218,11 @@ control MyIngress(
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)184;
             hdr.sflow_sample.sample_seq_num = (bit<32>)1;
-            hdr.sflow_sample.source_id = (bit<32>)123;
-            hdr.sflow_sample.sampling_rate = (bit<32>)456;
+            hdr.sflow_sample.source_id = (bit<32>)hdr.sample.ingress_port;
+            hdr.sflow_sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
             hdr.sflow_sample.sample_pool = (bit<32>)1;
             hdr.sflow_sample.drops = (bit<32>)0;
-            hdr.sflow_sample.input_if = (bit<32>)123;
+            hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
             hdr.sflow_sample.output_if = (bit<32>)0;
             hdr.sflow_sample.record_count = (bit<32>)1;
             
