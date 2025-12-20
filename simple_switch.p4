@@ -340,7 +340,6 @@ control MyIngressDeparser(packet_out pkt,
         // }'
         if (meta.recirc == 1) {
             resubmit.emit<sample_t>(hdr.sample);
-
         }
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
@@ -348,7 +347,6 @@ control MyIngressDeparser(packet_out pkt,
         pkt.emit(hdr.udp);
         pkt.emit(hdr.sflow_hd);
         pkt.emit(hdr.sflow_sample);
-        pkt.emit(hdr.sample);
         pkt.emit(hdr.raw_record);
         
     }
