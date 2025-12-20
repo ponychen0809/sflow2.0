@@ -35,7 +35,7 @@ parser MyIngressParser(packet_in pkt,
     }
 
     state parse_sample {
-        // pkt.extract(hdr.sample);
+        pkt.extract(hdr.sample);
         transition parse_raw_128;  // 接著去 parse_raw_128
     }
 
@@ -150,7 +150,6 @@ control MyIngress(
         hdr.udp.dst_port = (bit<16>)6343;
         hdr.udp.hdr_length = (bit<16>)228;
         
-        // hdr.udp.checksum = 0;
 
         hdr.sflow_hd.setValid();
         hdr.sflow_hd.version = (bit<32>)5;
@@ -205,7 +204,6 @@ control MyIngress(
         }
         size = 1;
     }
-    Resubmit() resubmit;
     apply {
         t_set_ts.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
@@ -252,16 +250,11 @@ control MyIngress(
             if(idx==140 || idx == 143){
                 pkt_count = inc_pkt.execute(idx);
                 if(pkt_count==0){   //送往recirc port
-                    // hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
-                    // meta.recirc = 1;
-                    // resubmit.emit<sample_t>({ hdr.sample.sampling_rate, ig_intr_md.ingress_port });
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
                     hdr.sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
-                }else{
-                    meta.recirc = 0;
                 }
             }
         }
@@ -341,9 +334,7 @@ control MyIngressDeparser(packet_out pkt,
                 });
             }
         }
-        if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-            mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
-        }
+        
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
@@ -351,7 +342,9 @@ control MyIngressDeparser(packet_out pkt,
         pkt.emit(hdr.sflow_hd);
         pkt.emit(hdr.sflow_sample);
         pkt.emit(hdr.raw_record);
-        
+        if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
+            mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
+        }
     }
 }
 
