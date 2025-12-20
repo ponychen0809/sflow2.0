@@ -250,7 +250,9 @@ control MyIngress(
             if(idx==140 || idx == 143){
                 pkt_count = inc_pkt.execute(idx);
                 if(pkt_count==0){   //送往recirc port
-                    resubmit.emit<sample_t>({ hdr.sample.sampling_rate, ig_intr_md.ingress_port });
+                    hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
+                    resubmit.emit<sample_t>(hdr.sample);
+                    // resubmit.emit<sample_t>({ hdr.sample.sampling_rate, ig_intr_md.ingress_port });
                     // ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     // meta.mirror_session = (bit<10>)26;
                     // hdr.sample.setValid();
