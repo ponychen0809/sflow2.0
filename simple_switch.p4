@@ -260,7 +260,7 @@ control MyIngress(
                     hdr.sample.setValid();
                     // hdr.sample.magic = 0xABCD;
                     
-                    hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
+                    hdr.sample.ingress_port = 0xAAAAAAAA;
                 }
             }
         }
