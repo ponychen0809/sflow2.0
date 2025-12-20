@@ -41,7 +41,8 @@ parser MyIngressParser(packet_in pkt,
         pkt.extract(hdr.raw_128);   // 直接吃 128 bytes
         transition accept;
     }
-
+   
+   
     state parse_ethernet {
         // pkt.advance(PORT_METADATA_SIZE);
         pkt.extract(hdr.ethernet);
