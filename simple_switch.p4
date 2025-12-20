@@ -17,7 +17,6 @@ enum bit<3> MIRROR_TYPE_t {
 };
 
 
-header first4_t { bit<32> w; }
 const bit<32> SAMPLING_RATE = 128;
 const bit<9> RECIRC_PORT = 36;
 parser MyIngressParser(packet_in pkt,
@@ -401,6 +400,7 @@ control MyEgress(
         // eg_intr_md.egress_port=39;
         if (eg_intr_dprs_md.mirror_type !=0){
             hdr.sample.setValid();
+             hdr.ethernet.src_addr = 0xaaaaaaaaaaaa;
         }else{
             hdr.sample.setInvalid();
         }
