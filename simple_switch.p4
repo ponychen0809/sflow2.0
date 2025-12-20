@@ -250,7 +250,7 @@ control MyIngress(
             if(idx==140 || idx == 143){
                 pkt_count = inc_pkt.execute(idx);
                 if(pkt_count==0){   //送往recirc port
-                            hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
+                    hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
 
                     // resubmit.emit<sample_t>({ hdr.sample.sampling_rate, ig_intr_md.ingress_port });
                     // ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
@@ -340,8 +340,11 @@ control MyIngressDeparser(packet_out pkt,
         // if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
         //     mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
 
-        // }
-        resubmit.emit<sample_t>(hdr.sample);
+        // }'
+        if (meta.recirc == 1) {
+            resubmit.emit<sample_t>(hdr.sample);
+
+        }
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
