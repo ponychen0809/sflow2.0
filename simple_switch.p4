@@ -236,7 +236,7 @@ control MyIngress(
             hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
 
             set_port_agent.apply();
-            hdr.sample.setInvalid();
+            // hdr.sample.setInvalid();
         }        
         else{
             hdr.sample.setValid();
