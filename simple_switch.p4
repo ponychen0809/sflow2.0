@@ -37,6 +37,7 @@ parser MyIngressParser(packet_in pkt,
         // pkt.extract(hdr.sample);
         pkt.extract(hdr.sample);
         meta.sample_ing_port = (bit<32>)hdr.sample.ingress_port;
+        meta.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
         transition parse_raw_128;  // 接著去 parse_raw_128
     }
 
@@ -223,8 +224,8 @@ control MyIngress(
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)184;
             hdr.sflow_sample.sample_seq_num = (bit<32>)1;
-            hdr.sflow_sample.source_id = (bit<32>)123;
-            hdr.sflow_sample.sampling_rate = (bit<32>)meta.sample_ing_port;
+            hdr.sflow_sample.source_id = (bit<32>)meta.sample_ing_port;
+            hdr.sflow_sample.sampling_rate = (bit<32>)meta.sampling_rate;
             hdr.sflow_sample.sample_pool = (bit<32>)1;
             hdr.sflow_sample.drops = (bit<32>)0;
             hdr.sflow_sample.input_if = (bit<32>)meta.sample_ing_port;
