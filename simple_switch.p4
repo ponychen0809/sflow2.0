@@ -208,40 +208,40 @@ control MyIngress(
         t_set_ts.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         if(ig_intr_md.ingress_port == 36){
-            // hdr.ethernet.setValid();
-            // hdr.ipv4.setValid();
-            // hdr.udp.setValid();
-            // ig_dprsr_md.mirror_type  =0;
-            // ig_tm_md.ucast_egress_port = 142;
+            hdr.ethernet.setValid();
+            hdr.ipv4.setValid();
+            hdr.udp.setValid();
+            ig_dprsr_md.mirror_type  =0;
+            ig_tm_md.ucast_egress_port = 142;
             
-            // hdr.sflow_sample.setValid();
-            // hdr.sflow_sample.sample_type = (bit<32>)1;
-            // hdr.sflow_sample.sample_length = (bit<32>)184;
-            // hdr.sflow_sample.sample_seq_num = (bit<32>)1;
-            // hdr.sflow_sample.source_id = (bit<32>)hdr.sample.ingress_port;
-            // hdr.sflow_sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
-            // hdr.sflow_sample.sample_pool = (bit<32>)1;
-            // hdr.sflow_sample.drops = (bit<32>)0;
-            // hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
-            // hdr.sflow_sample.output_if = (bit<32>)0;
-            // hdr.sflow_sample.record_count = (bit<32>)1;
+            hdr.sflow_sample.setValid();
+            hdr.sflow_sample.sample_type = (bit<32>)1;
+            hdr.sflow_sample.sample_length = (bit<32>)184;
+            hdr.sflow_sample.sample_seq_num = (bit<32>)1;
+            hdr.sflow_sample.source_id = (bit<32>)hdr.sample.ingress_port;
+            hdr.sflow_sample.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
+            hdr.sflow_sample.sample_pool = (bit<32>)1;
+            hdr.sflow_sample.drops = (bit<32>)0;
+            hdr.sflow_sample.input_if = (bit<32>)hdr.sample.ingress_port;
+            hdr.sflow_sample.output_if = (bit<32>)0;
+            hdr.sflow_sample.record_count = (bit<32>)1;
             
-            // hdr.raw_record.setValid();
-            // hdr.raw_record.record_type = (bit<32>)1;
-            // hdr.raw_record.record_length = (bit<32>)144;
-            // hdr.raw_record.header_protocol = (bit<32>)1;
-            // hdr.raw_record.frame_length = (bit<32>)558;
-            // hdr.raw_record.payload_removed = (bit<32>)4;
-            // hdr.raw_record.header_length = (bit<32>)128;
-            // hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
+            hdr.raw_record.setValid();
+            hdr.raw_record.record_type = (bit<32>)1;
+            hdr.raw_record.record_length = (bit<32>)144;
+            hdr.raw_record.header_protocol = (bit<32>)1;
+            hdr.raw_record.frame_length = (bit<32>)558;
+            hdr.raw_record.payload_removed = (bit<32>)4;
+            hdr.raw_record.header_length = (bit<32>)128;
+            hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
 
             set_port_agent.apply();
             // // hdr.sample.setInvalid();
-            if (hdr.sample.magic == 0xABCD) {
-                ig_tm_md.ucast_egress_port = 38;
-            }else{
-                ig_tm_md.ucast_egress_port = 37;
-            }
+            // if (hdr.sample.magic == 0xABCD) {
+            //     ig_tm_md.ucast_egress_port = 38;
+            // }else{
+            //     ig_tm_md.ucast_egress_port = 37;
+            // }
         }        
         else{
             hdr.sample.setValid();
@@ -404,13 +404,13 @@ control MyEgress(
 
     apply {
         // eg_intr_md.egress_port=39;
-        if (eg_intr_dprs_md.mirror_type !=0){
-            hdr.sample.setValid();
-            hdr.ethernet.src_addr = 0xaaaaaaaaaaaa;
-        }else{
-            hdr.sample.setInvalid();
-        }
-    }
+    //     if (eg_intr_dprs_md.mirror_type !=0){
+    //         hdr.sample.setValid();
+    //         hdr.ethernet.src_addr = 0xaaaaaaaaaaaa;
+    //     }else{
+    //         hdr.sample.setInvalid();
+    //     }
+    // }
 }
 
 control MyEgressDeparser(
@@ -420,7 +420,7 @@ control MyEgressDeparser(
         in egress_intrinsic_metadata_for_deparser_t eg_intr_dprs_md) {
 
     apply {
-        pkt.emit(hdr.sample);
+        // pkt.emit(hdr.sample);
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
