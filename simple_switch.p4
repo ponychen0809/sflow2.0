@@ -339,8 +339,10 @@ control MyIngressDeparser(packet_out pkt,
             }
         }
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
+            hdr.sample.sampling_rate = 0x11223344;
+            hdr.sample.ingress_port = 0x55667788;
         // 先把 mirror copy 丟出去，並在 mirror copy 前面 prepend sample_t
-        mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
+            mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
     }
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
