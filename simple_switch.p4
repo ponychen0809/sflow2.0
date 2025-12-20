@@ -35,7 +35,7 @@ parser MyIngressParser(packet_in pkt,
     }
 
     state parse_sample {
-        pkt.extract(hdr.sample);
+        // pkt.extract(hdr.sample);
         transition parse_raw_128;  // 接著去 parse_raw_128
     }
 
@@ -46,7 +46,7 @@ parser MyIngressParser(packet_in pkt,
    
 
     state parse_ethernet {
-        // pkt.advance(PORT_METADATA_SIZE);
+        pkt.advance(PORT_METADATA_SIZE);
         pkt.extract(hdr.ethernet);
         transition select(hdr.ethernet.ether_type) {
             ETHERTYPE_IPV4: parse_ipv4;
