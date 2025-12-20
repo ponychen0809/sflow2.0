@@ -35,7 +35,7 @@ parser TofinoIngressParser(
 
     state parse_resubmit {
         pkt.extract(hdr.sample);        
-        pkt.advance(56);                
+        // pkt.advance(64);                
         transition accept;
     }
 
