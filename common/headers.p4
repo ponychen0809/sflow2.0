@@ -214,6 +214,7 @@ header raw_128_t {
     bit<1024> data;   // 128 bytes = 1024 bits
 }
 header sample_t {
+    bit<16> magic; 
     bit<32>  sampling_rate;
     bit<32>  ingress_port;
 }
