@@ -410,7 +410,7 @@ control MyEgress(
     //     }else{
     //         hdr.sample.setInvalid();
     //     }
-    // }
+    }
 }
 
 control MyEgressDeparser(
