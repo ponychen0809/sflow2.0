@@ -258,7 +258,8 @@ control MyIngress(
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    hdr.sample.magic = 0xABCD;
+                    // hdr.sample.magic = 0xABCD;
+                    hdr.sample.sampling_rate = 0xBBBBBBBB;
                     hdr.sample.ingress_port = 0xAAAAAAAA;
                 }
             }
