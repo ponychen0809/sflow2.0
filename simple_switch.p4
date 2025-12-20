@@ -27,16 +27,11 @@ parser MyIngressParser(packet_in pkt,
 
     TofinoIngressParser() tofino_parser;
     state start {
-        tofino_parser.apply(pkt, ig_intr_md);
-        transition select(ig_intr_md.ingress_port) {
-            RECIRC_PORT: parse_sample;   // 從 recirc port 進來
-            default   : parse_ethernet;      // 一般 front-panel port
+        tofino_parser.apply(pkt,hdr, ig_intr_md);
+        transition select(ig_intr_md.resubmit_flag) {
+            1 : parse_raw_128;   // 從 recirc port 進來
+            0 : parse_ethernet;      // 一般 front-panel port
         }
-    }
-
-    state parse_sample {
-        pkt.extract(hdr.sample);
-        transition parse_raw_128;  // 接著去 parse_raw_128
     }
 
     state parse_raw_128 {
