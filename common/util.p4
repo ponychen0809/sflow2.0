@@ -39,7 +39,7 @@ parser TofinoIngressParser(
     }
 
     state parse_port_metadata {
-        // pkt.advance(PORT_METADATA_SIZE);
+        pkt.advance(PORT_METADATA_SIZE);
         transition accept;
     }
 }
