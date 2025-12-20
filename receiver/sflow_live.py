@@ -82,11 +82,14 @@ def parse_raw_header_record(raw, offset):
     解析 Flow Record 裡的 Raw Packet Header (record_type=1)。
     其它 record_type 先只 dump 十六進位。
     """
+
     base = offset
+
     if offset + 8 > len(raw):
         print(f"\n    [Record @ {base}]  **TRUNCATED HEADER**")
         return len(raw)
-
+    print("======= raw ===========")
+    print(raw[base:])
     rt_off = offset
     record_type, offset = read_u32(raw, offset)
     len_off = offset
