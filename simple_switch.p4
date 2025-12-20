@@ -259,8 +259,8 @@ control MyIngress(
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
                     // hdr.sample.magic = 0xABCD;
-                    hdr.sample.sampling_rate = 0xBBBBBBBB;
-                    hdr.sample.ingress_port = 0xAAAAAAAA;
+                    // hdr.sample.sampling_rate = 0xBBBBBBBB;
+                    // hdr.sample.ingress_port = 0xAAAAAAAA;
                 }
             }
         }
