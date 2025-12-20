@@ -239,6 +239,8 @@ control MyIngress(
             // // hdr.sample.setInvalid();
             if (hdr.sample.magic != 0xABCD) {
                 ig_tm_md.ucast_egress_port = 37;
+            }else{
+                ig_tm_md.ucast_egress_port = 38;
             }
         }        
         else{
