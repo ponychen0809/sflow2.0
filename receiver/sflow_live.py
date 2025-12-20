@@ -89,7 +89,7 @@ def parse_raw_header_record(raw, offset):
         print(f"\n    [Record @ {base}]  **TRUNCATED HEADER**")
         return len(raw)
     print("======= raw ===========")
-    print(raw[base:])
+    print(f"{raw[base:].hex(' ')}")
     rt_off = offset
     record_type, offset = read_u32(raw, offset)
     len_off = offset
