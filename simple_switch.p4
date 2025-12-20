@@ -17,7 +17,7 @@ enum bit<3> MIRROR_TYPE_t {
 };
 
 
-
+header first4_t { bit<32> w; }
 const bit<32> SAMPLING_RATE = 128;
 const bit<9> RECIRC_PORT = 36;
 parser MyIngressParser(packet_in pkt,
@@ -36,6 +36,8 @@ parser MyIngressParser(packet_in pkt,
 
     state parse_sample {
         // pkt.extract(hdr.sample);
+        pkt.advance(8);
+
         transition parse_raw_128;  // 接著去 parse_raw_128
     }
 
