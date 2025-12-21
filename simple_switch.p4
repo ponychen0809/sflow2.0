@@ -415,7 +415,7 @@ control MyIngressDeparser(packet_out pkt,
                 hdr.ipv4.dst_addr
             });
         }
-        if(hdr.sflow_hd.isValid() && hdr.sflow_flow.isValid()){
+        if(hdr.sflow_flow.isValid()){
             if (hdr.ipv4.isValid() && hdr.udp.isValid() ) {
                     hdr.udp.checksum = udp_checksum.update({
                     hdr.ipv4.src_addr,
@@ -456,7 +456,8 @@ control MyIngressDeparser(packet_out pkt,
                 });
             }
         }
-        if(hdr.sflow_hd.isValid() && hdr.sflow_counter.isValid()){
+        
+        if(hdr.sflow_counter.isValid()){
             if (hdr.ipv4.isValid() && hdr.udp.isValid() ) {
                     hdr.udp.checksum = udp_checksum.update({
                     hdr.ipv4.src_addr,
