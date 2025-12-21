@@ -237,7 +237,7 @@ control MyIngress(
             hdr.sflow_sample.sample_seq_num = (bit<32>)sampled_count;
             hdr.sflow_sample.source_id = (bit<32>)meta.sample_ing_port;
             hdr.sflow_sample.sampling_rate = (bit<32>)meta.sampling_rate+1;
-            hdr.sflow_sample.sample_pool = (bit<32>)pkt_count;
+            hdr.sflow_sample.sample_pool = (bit<32>)1;
             hdr.sflow_sample.drops = (bit<32>)0;
             hdr.sflow_sample.input_if = (bit<32>)meta.sample_ing_port;
             hdr.sflow_sample.output_if = (bit<32>)0;
