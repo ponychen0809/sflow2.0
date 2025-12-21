@@ -57,24 +57,21 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         # =========================================================
         # (0) Ports: port-add + port-enb
-        # port-add 13/- 10G NONE
-        # port-add 25/- 10G NONE
-        # port-add 26/- 10G NONE
-        # port-enb 13/-
-        # port-enb 25/-
-        # port-enb 26/-
-        # （照你貼的 port_table.entry_add 範例寫法）
+        # 開啟 ports:
+        # 140 141 142 143
+        # 32 33 34 35 36 37 38 39
         # =========================================================
         try:
-            entry_key_p13 = self.port_table.make_key([
-                gc.KeyTuple('$DEV_PORT', 13)
-            ])
-            entry_key_p25 = self.port_table.make_key([
-                gc.KeyTuple('$DEV_PORT', 25)
-            ])
-            entry_key_p26 = self.port_table.make_key([
-                gc.KeyTuple('$DEV_PORT', 26)
-            ])
+            ports = [140, 141, 142, 143,
+                     32, 33, 34, 35, 36, 37, 38, 39]
+
+            entry_keys = []
+            for p in ports:
+                entry_keys.append(
+                    self.port_table.make_key([
+                        gc.KeyTuple('$DEV_PORT', p)
+                    ])
+                )
 
             entry_data = self.port_table.make_data([
                 gc.DataTuple("$SPEED", str_val="BF_SPEED_10G"),
@@ -85,12 +82,13 @@ class SimpleSwitchTest(BfRuntimeTest):
 
             self.port_table.entry_add(
                 self.dev_tgt,
-                [entry_key_p13, entry_key_p25, entry_key_p26],
-                [entry_data, entry_data, entry_data]
+                entry_keys,
+                [entry_data] * len(entry_keys)
             )
-            print("Ports 13/25/26 已 port-add + port-enb (10G, NONE)")
+
+            print("Ports {} 已 port-add + port-enb (10G, NONE)".format(ports))
         except Exception as e:
-            print("Error on adding ports 13/25/26: {}".format(e))
+            print("Error on adding ports {}: {}".format(ports, e))
 
         # =========================================================
         # (1) MyIngress.ingress_port_forward
