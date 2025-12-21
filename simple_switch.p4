@@ -215,12 +215,8 @@ control MyIngress(
             hdr.ipv4.setValid();
             hdr.udp.setValid();
             ig_dprsr_md.mirror_type  =0;
-            // ig_tm_md.ucast_egress_port = 142;
-            if (meta.sample_ing_port == 140) {
-                ig_tm_md.ucast_egress_port = 142;
-            }else{
-                ig_tm_md.ucast_egress_port = 38;
-            }
+            ig_tm_md.ucast_egress_port = 142;
+            
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)184;
@@ -344,9 +340,8 @@ control MyIngressDeparser(packet_out pkt,
             }
         }
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-        // 先把 mirror copy 丟出去，並在 mirror copy 前面 prepend sample_t
-        mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
-    }
+            mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
+        }
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);

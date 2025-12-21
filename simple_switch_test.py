@@ -21,6 +21,10 @@ class SimpleSwitchTest(BfRuntimeTest):
         BfRuntimeTest.setUp(self, self.client_id, self.p4_name)
         self.bfrt_info = self.interface.bfrt_info_get(self.p4_name)
 
+        # 0) port cfg table（用來做 port-add/port-enb）
+        # 常見名字是 "$PORT"；如果你環境不同，改成你實際的 table name
+        self.port_table = self.bfrt_info.table_get("$PORT")
+
         # 1) user forwarding table
         self.ing_tbl = self.bfrt_info.table_get("MyIngress.ingress_port_forward")
 
@@ -50,6 +54,43 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         # ======== 記錄開始時間，之後 timestamp 會從 0 開始 ========
         self.start_time = time.time()
+
+        # =========================================================
+        # (0) Ports: port-add + port-enb
+        # port-add 13/- 10G NONE
+        # port-add 25/- 10G NONE
+        # port-add 26/- 10G NONE
+        # port-enb 13/-
+        # port-enb 25/-
+        # port-enb 26/-
+        # （照你貼的 port_table.entry_add 範例寫法）
+        # =========================================================
+        try:
+            entry_key_p13 = self.port_table.make_key([
+                gc.KeyTuple('$DEV_PORT', 13)
+            ])
+            entry_key_p25 = self.port_table.make_key([
+                gc.KeyTuple('$DEV_PORT', 25)
+            ])
+            entry_key_p26 = self.port_table.make_key([
+                gc.KeyTuple('$DEV_PORT', 26)
+            ])
+
+            entry_data = self.port_table.make_data([
+                gc.DataTuple("$SPEED", str_val="BF_SPEED_10G"),
+                gc.DataTuple("$FEC", str_val="BF_FEC_TYP_NONE"),
+                gc.DataTuple("$AUTO_NEGOTIATION", str_val="PM_AN_FORCE_DISABLE"),
+                gc.DataTuple("$PORT_ENABLE", bool_val=True)
+            ])
+
+            self.port_table.entry_add(
+                self.dev_tgt,
+                [entry_key_p13, entry_key_p25, entry_key_p26],
+                [entry_data, entry_data, entry_data]
+            )
+            print("Ports 13/25/26 已 port-add + port-enb (10G, NONE)")
+        except Exception as e:
+            print("Error on adding ports 13/25/26: {}".format(e))
 
         # =========================================================
         # (1) MyIngress.ingress_port_forward
@@ -152,16 +193,8 @@ class SimpleSwitchTest(BfRuntimeTest):
         print("set_port_agent 規則已寫入")
 
         # =========================================================
-        # (3.5) Mirror session: $mirror.cfg (照你其他 rule 的 entry_add 寫法)
-        # 你要新增的 rule:
-        # mirror.cfg.add_with_normal(
-        #     sid=26,
-        #     direction="INGRESS",
-        #     session_enable=True,
-        #     ucast_egress_port=32,
-        #     ucast_egress_port_valid=True,
-        #     max_pkt_len=0
-        # )
+        # (3.5) Mirror session: $mirror.cfg（照你指定的寫法）
+        # sid=26, INGRESS, enable, mirror 到 dev_port=32, max_pkt_len=0
         # =========================================================
         try:
             self.mirror_cfg_tbl.entry_add(
