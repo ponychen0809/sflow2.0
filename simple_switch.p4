@@ -188,12 +188,14 @@ control MyIngress(
 
     table t_sample_stats {
         key = {
+            meta.sample_ing_port : exact;
         }
         actions = {
             do_sample_stats;
             NoAction;
         }
-        size = 1;
+        size = 512;
+        default_action = NoAction();
     }
 
     table ingress_port_forward {
