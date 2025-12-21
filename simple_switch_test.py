@@ -1,292 +1,297 @@
 #!/usr/bin/env python3
+import os
+import json
+import time
+import threading
+
 import bfrt_grpc.client as gc
 from bfruntime_client_base_tests import BfRuntimeTest
 
 from ptf.testutils import send_packet
 from scapy.all import Ether, IP, UDP
 
-import threading
-import time
+
+def _to_int(v):
+    """Convert '0x..' string or int to int."""
+    if isinstance(v, int):
+        return v
+    if isinstance(v, str):
+        v = v.strip().lower()
+        if v.startswith("0x"):
+            return int(v, 16)
+        return int(v)
+    raise ValueError(f"Unsupported int value: {v!r}")
 
 
 class SimpleSwitchTest(BfRuntimeTest):
     def setUp(self):
         self.client_id = 0
-        # 這裡直接寫程式名即可，跟你 run_p4_tests.sh -p simple_switch 對應
         self.p4_name = "simple_switch"
         self.dev = 0
         self.dev_tgt = gc.Target(self.dev, pipe_id=0xFFFF)
+
+        # ---- load config ----
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        cfg_path = os.environ.get(
+            "SWITCH_CFG",
+            os.path.join(script_dir, "config.json")
+        )
+
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            self.cfg = json.load(f)
+
+        print(f"[CFG] loaded: {cfg_path}")
 
         # 建 BFRT 連線
         BfRuntimeTest.setUp(self, self.client_id, self.p4_name)
         self.bfrt_info = self.interface.bfrt_info_get(self.p4_name)
 
-        # 0) port cfg table（用來做 port-add/port-enb）
-        # 常見名字是 "$PORT"；如果你環境不同，改成你實際的 table name
+        # system tables
         self.port_table = self.bfrt_info.table_get("$PORT")
-
-        # 1) user forwarding table
-        self.ing_tbl = self.bfrt_info.table_get("MyIngress.ingress_port_forward")
-
-        # 2) sampling table
-        self.port_sampling_tbl = self.bfrt_info.table_get("MyIngress.port_sampling_rate")
-
-        # 3) port_agent table
-        self.port_agent_tbl = self.bfrt_info.table_get("MyIngress.set_port_agent")
-
-        # 4) PRE tables —— 名字是 $pre.node / $pre.mgid
         self.pre_node_tbl = self.bfrt_info.table_get("$pre.node")
         self.pre_mgid_tbl = self.bfrt_info.table_get("$pre.mgid")
-
-        # 4.5) Mirror cfg table —— 你要新增的 mirror session rule 會寫這張表
         self.mirror_cfg_tbl = self.bfrt_info.table_get("$mirror.cfg")
 
-        # 5) timestamp table（P4 裡要有 MyIngress.t_set_ts + action set_ts(ts)）
-        #    table t_set_ts { key = { } actions = { set_ts; } size = 1; }
+        # p4 tables
+        self.ing_tbl = self.bfrt_info.table_get("MyIngress.ingress_port_forward")
+        self.port_sampling_tbl = self.bfrt_info.table_get("MyIngress.port_sampling_rate")
+        self.port_agent_tbl = self.bfrt_info.table_get("MyIngress.set_port_agent")
         self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
 
-        # 給 0 起點 timestamp 用的起始時間
         self.start_time = None
-
         self.cleanUp()
 
     def runTest(self):
-
-        # ======== 記錄開始時間，之後 timestamp 會從 0 開始 ========
         self.start_time = time.time()
 
-        # =========================================================
-        # (0) Ports: port-add + port-enb
-        # 開啟 ports:
-        # 140 141 142 143
-        # 32 33 34 35 36 37 38 39
-        # =========================================================
-        try:
-            ports = [140, 141, 142, 143,
-                     32, 33, 34, 35, 36, 37, 38, 39]
+        self.apply_ports_from_cfg()
+        self.apply_forwarding_from_cfg()
+        self.apply_sampling_from_cfg()
+        self.apply_port_agent_from_cfg()
+        self.apply_mirror_cfg_from_cfg()
+        self.apply_pre_from_cfg()
+        self.apply_timestamp_from_cfg()
 
-            entry_keys = []
-            for p in ports:
-                entry_keys.append(
-                    self.port_table.make_key([
-                        gc.KeyTuple('$DEV_PORT', p)
-                    ])
-                )
-
-            entry_data = self.port_table.make_data([
-                gc.DataTuple("$SPEED", str_val="BF_SPEED_10G"),
-                gc.DataTuple("$FEC", str_val="BF_FEC_TYP_NONE"),
-                gc.DataTuple("$AUTO_NEGOTIATION", str_val="PM_AN_FORCE_DISABLE"),
-                gc.DataTuple("$PORT_ENABLE", bool_val=True)
-            ])
-
-            self.port_table.entry_add(
-                self.dev_tgt,
-                entry_keys,
-                [entry_data] * len(entry_keys)
-            )
-
-            print("Ports {} 已 port-add + port-enb (10G, NONE)".format(ports))
-        except Exception as e:
-            print("Error on adding ports {}: {}".format(ports, e))
-
-        # =========================================================
-        # (1) MyIngress.ingress_port_forward
-        # =========================================================
-        k1 = self.ing_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 140)
-        ])
-        d1 = self.ing_tbl.make_data(
-            [gc.DataTuple("port", 141)],
-            "MyIngress.set_out_port"
-        )
-
-        k2 = self.ing_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 141)
-        ])
-        d2 = self.ing_tbl.make_data(
-            [gc.DataTuple("port", 140)],
-            "MyIngress.set_out_port"
-        )
-
-        k3 = self.ing_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 142)
-        ])
-        d3 = self.ing_tbl.make_data(
-            [gc.DataTuple("port", 143)],
-            "MyIngress.set_out_port"
-        )
-
-        k4 = self.ing_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 143)
-        ])
-        d4 = self.ing_tbl.make_data(
-            [gc.DataTuple("port", 142)],
-            "MyIngress.set_out_port"
-        )
-
-        self.ing_tbl.entry_add(
-            self.dev_tgt,
-            [k1, k2, k3, k4],
-            [d1, d2, d3, d4]
-        )
-        print("ingress_port_forward 規則已寫入")
-
-        # =========================================================
-        # (2) MyIngress.port_sampling_rate
-        # =========================================================
-        ks1 = self.port_sampling_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 140)
-        ])
-        ds1 = self.port_sampling_tbl.make_data(
-            [gc.DataTuple("sampling_rate", 99)],
-            "MyIngress.set_sampling_rate"
-        )
-
-        ks2 = self.port_sampling_tbl.make_key([
-            gc.KeyTuple("ig_intr_md.ingress_port", 143)
-        ])
-        ds2 = self.port_sampling_tbl.make_data(
-            [gc.DataTuple("sampling_rate", 49)],
-            "MyIngress.set_sampling_rate"
-        )
-
-        self.port_sampling_tbl.entry_add(
-            self.dev_tgt,
-            [ks1, ks2],
-            [ds1, ds2]
-        )
-        print("port_sampling_rate 規則已寫入")
-
-        # =========================================================
-        # (3) MyIngress.set_port_agent
-        # =========================================================
-        pa1_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("hdr.sample.ingress_port", 140)
-        ])
-        pa1_data = self.port_agent_tbl.make_data(
-            [
-                gc.DataTuple("agent_addr", 0x0a0a0301),
-                gc.DataTuple("agent_id", 1)
-            ],
-            "MyIngress.set_sample_hd"
-        )
-
-        pa2_key = self.port_agent_tbl.make_key([
-            gc.KeyTuple("hdr.sample.ingress_port", 143)
-        ])
-        pa2_data = self.port_agent_tbl.make_data(
-            [
-                gc.DataTuple("agent_addr", 0x0a0a0302),
-                gc.DataTuple("agent_id", 2)
-            ],
-            "MyIngress.set_sample_hd"
-        )
-
-        self.port_agent_tbl.entry_add(
-            self.dev_tgt,
-            [pa1_key, pa2_key],
-            [pa1_data, pa2_data]
-        )
-        print("set_port_agent 規則已寫入")
-
-        # =========================================================
-        # (3.5) Mirror session: $mirror.cfg（照你指定的寫法）
-        # sid=26, INGRESS, enable, mirror 到 dev_port=32, max_pkt_len=0
-        # =========================================================
-        try:
-            self.mirror_cfg_tbl.entry_add(
-                self.dev_tgt,
-                [self.mirror_cfg_tbl.make_key([
-                    gc.KeyTuple('$sid', 26)
-                ])],
-                [self.mirror_cfg_tbl.make_data([
-                    gc.DataTuple('$direction', str_val='INGRESS'),
-                    gc.DataTuple('$session_enable', bool_val=True),
-                    gc.DataTuple('$ucast_egress_port', 32),
-                    gc.DataTuple('$ucast_egress_port_valid', bool_val=True),
-                    gc.DataTuple('$max_pkt_len', 0)
-                ], '$normal')]
-            )
-            print("mirror cfg 已寫入:sid=26, INGRESS -> dev_port=32")
-        except Exception as e:
-            print("Error on adding mirror cfg: {}".format(e))
-
-        # =========================================================
-        # (4) PRE multicast: $pre.node / $pre.mgid
-        # =========================================================
-        node_id = 1
-        dev_port_list = [32]   # device port 32 (ports.json map → PTF port 320)
-
-        # ---- $pre.node ----
-        try:
-            self.pre_node_tbl.entry_add(
-                self.dev_tgt,
-                [self.pre_node_tbl.make_key([
-                    gc.KeyTuple('$MULTICAST_NODE_ID', node_id)
-                ])],
-                [self.pre_node_tbl.make_data([
-                    gc.DataTuple('$MULTICAST_RID', 1),
-                    gc.DataTuple('$MULTICAST_LAG_ID', int_arr_val=[]),
-                    gc.DataTuple('$DEV_PORT', int_arr_val=dev_port_list)
-                ])]
-            )
-            print("$pre.node 已寫入")
-        except Exception as e:
-            print("Error on adding $pre.node: {}".format(e))
-
-        # ---- $pre.mgid ----
-        mgid = 1
-        try:
-            self.pre_mgid_tbl.entry_add(
-                self.dev_tgt,
-                [self.pre_mgid_tbl.make_key([
-                    gc.KeyTuple('$MGID', mgid)
-                ])],
-                [self.pre_mgid_tbl.make_data([
-                    gc.DataTuple('$MULTICAST_NODE_ID', int_arr_val=[node_id]),
-                    gc.DataTuple('$MULTICAST_NODE_L1_XID_VALID',
-                                 bool_arr_val=[False]),
-                    gc.DataTuple('$MULTICAST_NODE_L1_XID',
-                                 int_arr_val=[0])
-                ])]
-            )
-            print("$pre.mgid 已寫入")
-        except Exception as e:
-            print("Error on adding $pre.mgid: {}".format(e))
-
-        # =========================================================
-        # (5) MyIngress.t_set_ts：先設 default entry = 0，
-        #     之後每秒改成 0,1,2,3,...
-        # =========================================================
-        init_ts = 0
-        ts_data = self.ts_tbl.make_data(
-            [gc.DataTuple("ts", init_ts)],
-            "MyIngress.set_ts"   # P4 action 名字
-        )
-
-        # 無 key table：用 default_entry_set 寫入
-        self.ts_tbl.default_entry_set(
-            self.dev_tgt,
-            ts_data
-        )
-        print("t_set_ts 初始 timestamp = {} 已寫入".format(init_ts))
-
-        # =========================================================
-        # (6) 啟動背景 threads：
-        #     - send_pkt_every_second：每秒送一包到 PTF port 320
-        #     - update_ts_every_second：每秒更新一次 timestamp rule
-        # =========================================================
+        # threads
         t1 = threading.Thread(target=self.send_pkt_every_second, daemon=True)
         t1.start()
 
-        t2 = threading.Thread(target=self.update_ts_every_second, daemon=True)
-        t2.start()
+        # 只有 timestamp.enable=true 才跑更新 thread
+        if bool(self.cfg.get("timestamp", {}).get("enable", True)):
+            t2 = threading.Thread(target=self.update_ts_every_second, daemon=True)
+            t2.start()
 
-        # 不讓測試結束
         while True:
             time.sleep(1)
 
+    # ----------------------------
+    # apply: ports
+    # ----------------------------
+    def apply_ports_from_cfg(self):
+        p = self.cfg.get("ports", {})
+        ports = p.get("dev_ports", [])
+        if not ports:
+            print("[ports] skip (no dev_ports)")
+            return
+
+        speed = p.get("speed", "BF_SPEED_10G")
+        fec = p.get("fec", "BF_FEC_TYP_NONE")
+        autoneg = p.get("autoneg", "PM_AN_FORCE_DISABLE")
+        enable = bool(p.get("enable", True))
+
+        try:
+            keys = [
+                self.port_table.make_key([gc.KeyTuple("$DEV_PORT", int(dp))])
+                for dp in ports
+            ]
+
+            data = self.port_table.make_data([
+                gc.DataTuple("$SPEED", str_val=str(speed)),
+                gc.DataTuple("$FEC", str_val=str(fec)),
+                gc.DataTuple("$AUTO_NEGOTIATION", str_val=str(autoneg)),
+                gc.DataTuple("$PORT_ENABLE", bool_val=enable)
+            ])
+
+            self.port_table.entry_add(self.dev_tgt, keys, [data] * len(keys))
+            print(f"[ports] added+enabled: {ports} (speed={speed}, fec={fec}, enable={enable})")
+        except Exception as e:
+            print(f"[ports] Error: {e}")
+
+    # ----------------------------
+    # apply: forwarding
+    # ----------------------------
+    def apply_forwarding_from_cfg(self):
+        rules = self.cfg.get("forwarding", [])
+        if not rules:
+            print("[forwarding] skip (no rules)")
+            return
+
+        keys = []
+        datas = []
+        for r in rules:
+            in_p = int(r["ingress_port"])
+            out_p = int(r["egress_port"])
+            keys.append(self.ing_tbl.make_key([gc.KeyTuple("ig_intr_md.ingress_port", in_p)]))
+            datas.append(self.ing_tbl.make_data([gc.DataTuple("port", out_p)], "MyIngress.set_out_port"))
+
+        try:
+            self.ing_tbl.entry_add(self.dev_tgt, keys, datas)
+            print(f"[forwarding] rules written: {len(rules)}")
+        except Exception as e:
+            print(f"[forwarding] Error: {e}")
+
+    # ----------------------------
+    # apply: sampling rate
+    # ----------------------------
+    def apply_sampling_from_cfg(self):
+        rules = self.cfg.get("sampling_rate", [])
+        if not rules:
+            print("[sampling] skip (no rules)")
+            return
+
+        keys = []
+        datas = []
+        for r in rules:
+            in_p = int(r["ingress_port"])
+            rate = int(r["rate"])
+            keys.append(self.port_sampling_tbl.make_key([gc.KeyTuple("ig_intr_md.ingress_port", in_p)]))
+            datas.append(self.port_sampling_tbl.make_data([gc.DataTuple("sampling_rate", rate)],
+                                                         "MyIngress.set_sampling_rate"))
+
+        try:
+            self.port_sampling_tbl.entry_add(self.dev_tgt, keys, datas)
+            print(f"[sampling] rules written: {len(rules)}")
+        except Exception as e:
+            print(f"[sampling] Error: {e}")
+
+    # ----------------------------
+    # apply: port agent (based on hdr.sample.ingress_port)
+    # ----------------------------
+    def apply_port_agent_from_cfg(self):
+        rules = self.cfg.get("port_agent", [])
+        if not rules:
+            print("[port_agent] skip (no rules)")
+            return
+
+        keys = []
+        datas = []
+        for r in rules:
+            in_p = int(r["ingress_port"])
+            addr = _to_int(r["agent_addr"])
+            agent_id = int(r["agent_id"])
+
+            keys.append(self.port_agent_tbl.make_key([gc.KeyTuple("hdr.sample.ingress_port", in_p)]))
+            datas.append(self.port_agent_tbl.make_data(
+                [
+                    gc.DataTuple("agent_addr", addr),
+                    gc.DataTuple("agent_id", agent_id)
+                ],
+                "MyIngress.set_sample_hd"
+            ))
+
+        try:
+            self.port_agent_tbl.entry_add(self.dev_tgt, keys, datas)
+            print(f"[port_agent] rules written: {len(rules)}")
+        except Exception as e:
+            print(f"[port_agent] Error: {e}")
+
+    # ----------------------------
+    # apply: mirror cfg (use your '$normal' style)
+    # ----------------------------
+    def apply_mirror_cfg_from_cfg(self):
+        rules = self.cfg.get("mirror_cfg", [])
+        if not rules:
+            print("[mirror_cfg] skip (no rules)")
+            return
+
+        for r in rules:
+            try:
+                self.mirror_cfg_tbl.entry_add(
+                    self.dev_tgt,
+                    [self.mirror_cfg_tbl.make_key([
+                        gc.KeyTuple("$sid", int(r["sid"]))
+                    ])],
+                    [self.mirror_cfg_tbl.make_data([
+                        gc.DataTuple("$direction", str_val=str(r.get("direction", "INGRESS"))),
+                        gc.DataTuple("$session_enable", bool_val=bool(r.get("session_enable", True))),
+                        gc.DataTuple("$ucast_egress_port", int(r.get("ucast_egress_port", 0))),
+                        gc.DataTuple("$ucast_egress_port_valid", bool_val=bool(r.get("ucast_egress_port_valid", True))),
+                        gc.DataTuple("$max_pkt_len", int(r.get("max_pkt_len", 0)))
+                    ], "$normal")]
+                )
+                print(f"[mirror_cfg] written: sid={r['sid']} dir={r.get('direction')} ucast={r.get('ucast_egress_port')}")
+            except Exception as e:
+                print(f"[mirror_cfg] Error (sid={r.get('sid')}): {e}")
+
+    # ----------------------------
+    # apply: PRE (optional)
+    # ----------------------------
+    def apply_pre_from_cfg(self):
+        pre = self.cfg.get("pre", None)
+        if not pre:
+            print("[pre] skip (no config)")
+            return
+
+        node_id = int(pre.get("node_id", 1))
+        mgid = int(pre.get("mgid", 1))
+        rid = int(pre.get("rid", 1))
+        dev_ports = [int(x) for x in pre.get("dev_ports", [])]
+
+        if not dev_ports:
+            print("[pre] skip (no dev_ports)")
+            return
+
+        # $pre.node
+        try:
+            self.pre_node_tbl.entry_add(
+                self.dev_tgt,
+                [self.pre_node_tbl.make_key([gc.KeyTuple("$MULTICAST_NODE_ID", node_id)])],
+                [self.pre_node_tbl.make_data([
+                    gc.DataTuple("$MULTICAST_RID", rid),
+                    gc.DataTuple("$MULTICAST_LAG_ID", int_arr_val=[]),
+                    gc.DataTuple("$DEV_PORT", int_arr_val=dev_ports)
+                ])]
+            )
+            print(f"[pre.node] written: node_id={node_id}, dev_ports={dev_ports}")
+        except Exception as e:
+            print(f"[pre.node] Error: {e}")
+
+        # $pre.mgid
+        try:
+            self.pre_mgid_tbl.entry_add(
+                self.dev_tgt,
+                [self.pre_mgid_tbl.make_key([gc.KeyTuple("$MGID", mgid)])],
+                [self.pre_mgid_tbl.make_data([
+                    gc.DataTuple("$MULTICAST_NODE_ID", int_arr_val=[node_id]),
+                    gc.DataTuple("$MULTICAST_NODE_L1_XID_VALID", bool_arr_val=[False]),
+                    gc.DataTuple("$MULTICAST_NODE_L1_XID", int_arr_val=[0])
+                ])]
+            )
+            print(f"[pre.mgid] written: mgid={mgid} -> node_id={node_id}")
+        except Exception as e:
+            print(f"[pre.mgid] Error: {e}")
+
+    # ----------------------------
+    # apply: timestamp default entry
+    # ----------------------------
+    def apply_timestamp_from_cfg(self):
+        ts_cfg = self.cfg.get("timestamp", {"enable": True, "init": 0})
+        if not bool(ts_cfg.get("enable", True)):
+            print("[timestamp] disabled by config")
+            return
+
+        init_ts = int(ts_cfg.get("init", 0))
+        try:
+            ts_data = self.ts_tbl.make_data([gc.DataTuple("ts", init_ts)], "MyIngress.set_ts")
+            self.ts_tbl.default_entry_set(self.dev_tgt, ts_data)
+            print(f"[timestamp] default init={init_ts}")
+        except Exception as e:
+            print(f"[timestamp] Error: {e}")
+
+    # ----------------------------
+    # threads
+    # ----------------------------
     def send_pkt_every_second(self):
         pkt = (
             Ether(dst="ff:ff:ff:ff:ff:ff", src="00:11:22:33:44:55") /
@@ -304,28 +309,18 @@ class SimpleSwitchTest(BfRuntimeTest):
             send_packet(self, 320, pkt)
             time.sleep(1)
 
-    # 每秒更新一次 timestamp rule（覆寫 default entry，從 0 開始累加）
     def update_ts_every_second(self):
-        print("start upate timestamp")
+        print("[timestamp] start update thread")
         while True:
-            # 從程式開始時間算起的經過秒數：0,1,2,3,...
             elapsed_sec = int(time.time() - self.start_time)
-
-            ts_data = self.ts_tbl.make_data(
-                [gc.DataTuple("ts", elapsed_sec)],
-                "MyIngress.set_ts"
-            )
-
-            # 無 key table：一樣用 default_entry_set 覆蓋
-            self.ts_tbl.default_entry_set(
-                self.dev_tgt,
-                ts_data
-            )
-            # print("更新 t_set_ts.ts = {}".format(elapsed_sec))
+            try:
+                ts_data = self.ts_tbl.make_data([gc.DataTuple("ts", elapsed_sec)], "MyIngress.set_ts")
+                self.ts_tbl.default_entry_set(self.dev_tgt, ts_data)
+            except Exception as e:
+                print(f"[timestamp] update Error: {e}")
             time.sleep(1)
 
     def cleanUp(self):
-        # 目前不清 table，避免把你其他設定刪掉
         pass
 
     def tearDown(self):

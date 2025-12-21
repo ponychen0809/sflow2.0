@@ -1,0 +1,49 @@
+{
+  "ports": {
+    "speed": "BF_SPEED_10G",
+    "fec": "BF_FEC_TYP_NONE",
+    "autoneg": "PM_AN_FORCE_DISABLE",
+    "enable": true,
+    "dev_ports": [140, 141, 142, 143, 32, 33, 34, 35, 36, 37, 38, 39]
+  },
+
+  "forwarding": [
+    { "ingress_port": 140, "egress_port": 141 },
+    { "ingress_port": 141, "egress_port": 140 },
+    { "ingress_port": 142, "egress_port": 143 },
+    { "ingress_port": 143, "egress_port": 142 }
+  ],
+
+  "sampling_rate": [
+    { "ingress_port": 140, "rate": 99 },
+    { "ingress_port": 143, "rate": 49 }
+  ],
+
+  "port_agent": [
+    { "ingress_port": 140, "agent_addr": "0x0a0a0301", "agent_id": 1 },
+    { "ingress_port": 143, "agent_addr": "0x0a0a0302", "agent_id": 2 }
+  ],
+
+  "mirror_cfg": [
+    {
+      "sid": 26,
+      "direction": "INGRESS",
+      "session_enable": true,
+      "ucast_egress_port": 32,
+      "ucast_egress_port_valid": true,
+      "max_pkt_len": 0
+    }
+  ],
+
+  "pre": {
+    "node_id": 1,
+    "rid": 1,
+    "mgid": 1,
+    "dev_ports": [32]
+  },
+
+  "timestamp": {
+    "enable": true,
+    "init": 0
+  }
+}
