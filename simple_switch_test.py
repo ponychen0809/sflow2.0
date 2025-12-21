@@ -175,14 +175,17 @@ class SimpleSwitchTest(BfRuntimeTest):
                     print("[if_stats] entry_add Error: {}".format(e_add))
 
             # ★ 新增：寫完立刻讀回來（不管成功與否都嘗試讀，方便 debug）
+                    # ★ 新增：寫完立刻讀回來（從 HW 讀）
             try:
-                it = self.if_stats_tbl.entry_get(self.dev_tgt, [key], {"from_hw": False})
+                it = self.if_stats_tbl.entry_get(self.dev_tgt, [key], {"from_hw": True})
                 for d, k in it:
-                    # d.to_dict() 會把 action/field 都印出來
-                    print("[if_stats] readback index={} data={}".format(p, d.to_dict()))
+                    dd = d.to_dict()
+                    # dd 可能長這樣: {'ifInOctets': 946, 'is_default_entry': False, 'action_name': 'MyIngress.set_if_stats'}
+                    print("[if_stats] readback index={} data={}".format(p, dd))
                     break
             except Exception as e_rb:
                 print("[if_stats] readback Error: {}".format(e_rb))
+
 
 
     # ----------------------------
