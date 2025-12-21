@@ -126,7 +126,7 @@ control MyIngress(
         inc_sampled_pkt = {
             void apply(inout bit<32> v, out bit<32> new_val) {
                 v       = v + 1;
-                hdr.sample.pkt_count = v; 
+                new_val = v; 
             }
     };
 
@@ -288,7 +288,7 @@ control MyIngress(
             }
             bit<32> pkt_count;
             bit<32> sampled_count;
-            if(idx==140 || idx == 143){
+            
                 pkt_count = inc_pkt.execute(idx);
                 
                 if(pkt_count==0){   //送往recirc port
@@ -297,10 +297,10 @@ control MyIngress(
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
                     hdr.sample.pkt_count = pkt_count;
-                    // hdr.sample.sampled_count = sampled_count;
+                    hdr.sample.sampled_count = sampled_count;
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
-            }
+            
         }
         
         
