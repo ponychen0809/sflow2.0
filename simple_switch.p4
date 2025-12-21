@@ -376,6 +376,7 @@ control MyIngress(
             if(idx==140 || idx == 143){
                 meta.sample_type = 0;
                 pkt_count = inc_pkt.execute(idx);
+                port_in_bytes.count(idx);
                 set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
                     set_sampled_count(idx);
