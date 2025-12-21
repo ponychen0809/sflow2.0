@@ -146,6 +146,9 @@ class SimpleSwitchTest(BfRuntimeTest):
         for p in ports:
             b = self.read_port_in_bytes(p)
 
+            # ★ 新增：每次讀到 counter 就印 index 與值
+            print("[counter] index={} bytes={}".format(p, b))
+
             key = self.if_stats_tbl.make_key([
                 gc.KeyTuple("ig_intr_md.ingress_port", int(p))
             ])
@@ -154,24 +157,18 @@ class SimpleSwitchTest(BfRuntimeTest):
                 "MyIngress.set_if_stats"
             )
 
-            # 先試著 mod（更新）
             try:
                 self.if_stats_tbl.entry_mod(self.dev_tgt, [key], [data])
-                # 你想看每次更新的值可以開這行
-                # print("[if_stats] mod port={} ifInOctets={}".format(p, b))
                 continue
             except Exception as e_mod:
-                # 如果是第一次還沒 entry，mod 會失敗，下面改用 add
                 pass
 
-            # 再試著 add（第一次建立）
             try:
                 self.if_stats_tbl.entry_add(self.dev_tgt, [key], [data])
-                # print("[if_stats] add port={} ifInOctets={}".format(p, b))
             except Exception as e_add:
-                # 如果 add 還是失敗，把兩個錯誤都印出來方便你 debug
                 print("[if_stats] entry_mod Error: {}".format(e_mod))
                 print("[if_stats] entry_add Error: {}".format(e_add))
+
 
 
     # ----------------------------
