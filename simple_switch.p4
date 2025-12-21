@@ -238,7 +238,7 @@ control MyIngress(
         hdr.if_record.ifSpeed = (bit<64>)1000000000;
         hdr.if_record.ifDirection = (bit<32>)1;
         hdr.if_record.ifStatus = (bit<32>)1;
-        hdr.if_record.ifInOctets = (bit<64>)100;
+        hdr.if_record.ifInOctets = (bit<64>)meta.ifInOctets;
         hdr.if_record.ifInUcastPkts = (bit<32>)200;
         hdr.if_record.ifInMulticastPkts = (bit<32>)300;
         hdr.if_record.ifInBroadcastPkts = (bit<32>)400;
