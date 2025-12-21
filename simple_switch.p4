@@ -384,7 +384,7 @@ control MyIngress(
                 
                 set_counter_sample_hdr();
                 set_counter_sample_eth_record();
-                if_stats_tbl.apply();
+                set_if_count.apply();
                 set_counter_sample_if_record();
                 ig_tm_md.ucast_egress_port = 142;
                 meta.sample_type = 2;
