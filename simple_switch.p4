@@ -228,13 +228,13 @@ control MyIngress(
 
             // bit<32> pkt_count;
             // pkt_count = read_pkt.execute(tmp_idx);
-            bit<32> sampled_count;
-            sampled_count = inc_sampled_pkt.execute(tmp_idx);
+            // bit<32> sampled_count;
+            // sampled_count = inc_sampled_pkt.execute(tmp_idx);
 
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)184;
-            hdr.sflow_sample.sample_seq_num = (bit<32>)sampled_count;
+            hdr.sflow_sample.sample_seq_num = (bit<32>)1;
             hdr.sflow_sample.source_id = (bit<32>)meta.sample_ing_port;
             hdr.sflow_sample.sampling_rate = (bit<32>)meta.sampling_rate+1;
             hdr.sflow_sample.sample_pool = (bit<32>)1;
