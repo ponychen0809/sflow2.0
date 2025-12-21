@@ -171,7 +171,30 @@ control MyIngress(
         hdr.sflow_hd.uptime = (bit<32>)meta.ctrl_ts;
         hdr.sflow_hd.samples = (bit<32>)1;  
     }
+    action do_sample_stats(){
+        bit<9> p = (bit<9>) meta.sample_ing_port;
 
+        // 你原本那兩行放進來
+        bit<32> pkt_count;
+        pkt_count = read_pkt.execute(p);
+
+        bit<32> sampled_count;
+        sampled_count = inc_sampled_pkt.execute(p);
+
+        // 把結果存回 meta，後面組 sFlow 用
+        meta.pkt_count = pkt_count;
+        meta.sampled_count = sampled_count;
+    }
+
+    table t_sample_stats {
+        key = {
+        }
+        actions = {
+            do_sample_stats;
+            NoAction;
+        }
+        size = 1;
+    }
 
     table ingress_port_forward {
         key = {

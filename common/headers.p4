@@ -176,6 +176,8 @@ struct my_metadata_t {
     MirrorId_t mirror_session;
     bit<32> sample_ing_port;
     bit<32>  sampling_rate;
+    bit<32> pkt_count;
+    bit<32> sampled_count;
     bit<1024> raw_128_data;
     bit<1>  recirc;
 }
