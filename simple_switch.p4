@@ -218,13 +218,14 @@ control MyIngress(
     apply {
         t_set_ts.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
+        bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
+
         if(ig_intr_md.ingress_port == 36){
             hdr.ethernet.setValid();
             hdr.ipv4.setValid();
             hdr.udp.setValid();
             ig_dprsr_md.mirror_type  = 0;
             ig_tm_md.ucast_egress_port = 142;
-            bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
 
             bit<32> pkt_count;
             pkt_count = read_pkt.execute(tmp_idx);
