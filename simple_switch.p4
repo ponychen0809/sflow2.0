@@ -241,7 +241,7 @@ control MyIngress(
     apply {
         t_set_ts.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
-        bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
+        // bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
 
         if(ig_intr_md.ingress_port == 36){
             hdr.ethernet.setValid();
@@ -249,19 +249,19 @@ control MyIngress(
             hdr.udp.setValid();
             ig_dprsr_md.mirror_type  = 0;
             ig_tm_md.ucast_egress_port = 142;
-
-            bit<32> pkt_count;
-            pkt_count = read_pkt.execute(tmp_idx);
+            t_sample_stats.apply();
+            // bit<32> pkt_count;
+            // pkt_count = read_pkt.execute(tmp_idx);
             // bit<32> sampled_count;
             // sampled_count = inc_sampled_pkt.execute(tmp_idx);
 
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)184;
-            hdr.sflow_sample.sample_seq_num = (bit<32>)1;
+            hdr.sflow_sample.sample_seq_num = (bit<32>)meta.sampled_count;
             hdr.sflow_sample.source_id = (bit<32>)meta.sample_ing_port;
             hdr.sflow_sample.sampling_rate = (bit<32>)meta.sampling_rate+1;
-            hdr.sflow_sample.sample_pool = (bit<32>)1;
+            hdr.sflow_sample.sample_pool = (bit<32>)meta.pkt_count;
             hdr.sflow_sample.drops = (bit<32>)0;
             hdr.sflow_sample.input_if = (bit<32>)meta.sample_ing_port;
             hdr.sflow_sample.output_if = (bit<32>)0;
