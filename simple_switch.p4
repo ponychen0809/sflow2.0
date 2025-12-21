@@ -163,7 +163,7 @@ control MyIngress(
         hdr.sample.pkt_count = pkt_count;
     }
     action set_counter_sample_hdr() {
-        hdr.sflow_flow.setInvalid();
+        // hdr.sflow_flow.setInvalid();
         hdr.raw_record.setInvalid();
         hdr.ethernet.setValid();
         hdr.ipv4.setValid();
