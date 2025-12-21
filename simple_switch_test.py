@@ -161,12 +161,12 @@ class SimpleSwitchTest(BfRuntimeTest):
                 self.if_stats_tbl.entry_mod(self.dev_tgt, [key], [data])
                 continue
             except Exception as e_mod:
+                print("[if_stats] entry_mod Error: {}".format(e_mod))
                 pass
 
             try:
                 self.if_stats_tbl.entry_add(self.dev_tgt, [key], [data])
             except Exception as e_add:
-                print("[if_stats] entry_mod Error: {}".format(e_mod))
                 print("[if_stats] entry_add Error: {}".format(e_add))
 
 
