@@ -335,7 +335,7 @@ control MyIngress(
             set_if_stats;
             NoAction;
         }
-        size = 512;
+        size = 256;
         default_action = NoAction;
     }
     apply {
