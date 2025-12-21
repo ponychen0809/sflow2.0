@@ -153,7 +153,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                 gc.KeyTuple("ig_intr_md.ingress_port", int(p))
             ])
             data = self.if_stats_tbl.make_data(
-                [gc.DataTuple("ifInOctets", int(b))],
+                [gc.DataTuple("ifInOctets", int(100))],
                 "MyIngress.set_if_stats"
             )
 
