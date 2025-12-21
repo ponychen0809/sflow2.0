@@ -295,7 +295,7 @@ control MyIngress(
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
                     hdr.sample.pkt_count = pkt_count;
-                    // hdr.sample.sampled_count = (bit<32>)inc_sampled_pkt.execute(idx);
+                    hdr.sample.sampled_count = (bit<32>)inc_sampled_pkt.execute(idx);
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
