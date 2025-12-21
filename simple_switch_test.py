@@ -163,29 +163,23 @@ class SimpleSwitchTest(BfRuntimeTest):
         #     max_pkt_len=0
         # )
         # =========================================================
-        sid = 26
-
-        mirror_key = self.mirror_cfg_tbl.make_key([
-            gc.KeyTuple("$sid", sid)
-        ])
-
-        mirror_data = self.mirror_cfg_tbl.make_data(
-            [
-                gc.DataTuple("$direction", "INGRESS"),
-                gc.DataTuple("$session_enable", True),
-                gc.DataTuple("$ucast_egress_port", 32),
-                gc.DataTuple("$ucast_egress_port_valid", True),
-                gc.DataTuple("$max_pkt_len", 0),
-            ],
-            "normal"
-        )
-
-        self.mirror_cfg_tbl.entry_add(
-            self.dev_tgt,
-            [mirror_key],
-            [mirror_data]
-        )
-        print("$mirror.cfg mirror session 已寫入 (sid={})".format(sid))
+        try:
+            self.mirror_cfg_tbl.entry_add(
+                self.dev_tgt,
+                [self.mirror_cfg_tbl.make_key([
+                    gc.KeyTuple('$sid', 26)
+                ])],
+                [self.mirror_cfg_tbl.make_data([
+                    gc.DataTuple('$direction', str_val='INGRESS'),
+                    gc.DataTuple('$session_enable', bool_val=True),
+                    gc.DataTuple('$ucast_egress_port', 32),
+                    gc.DataTuple('$ucast_egress_port_valid', bool_val=True),
+                    gc.DataTuple('$max_pkt_len', 0)
+                ], '$normal')]
+            )
+            print("mirror cfg 已寫入:sid=26, INGRESS -> dev_port=32")
+        except Exception as e:
+            print("Error on adding mirror cfg: {}".format(e))
 
         # =========================================================
         # (4) PRE multicast: $pre.node / $pre.mgid
