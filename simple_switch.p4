@@ -226,8 +226,8 @@ control MyIngress(
             ig_tm_md.ucast_egress_port = 142;
             bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
 
-            // bit<32> pkt_count;
-            // pkt_count = read_pkt.execute(tmp_idx);
+            bit<32> pkt_count;
+            pkt_count = read_pkt.execute(tmp_idx);
             // bit<32> sampled_count;
             // sampled_count = inc_sampled_pkt.execute(tmp_idx);
 
