@@ -166,8 +166,8 @@ control MyIngress(
         hdr.sample.pkt_count = pkt_count;
     }
 
-    action set_if_stats(bit<32> ifInOctets) {
-        meta.ifInOctets = ifInOctets;
+    action if_count(bit<32> ifcount) {
+        meta.ifInOctets = ifcount;
     }
     action set_counter_sample_hdr() {
         
@@ -327,12 +327,12 @@ control MyIngress(
         }
         size = 1;
     }
-    table if_stats_tbl {
+    table set_if_count {
         key = {
-            ig_intr_md.ingress_port : exact;
+            hdr.sample.ingress_port : exact;
         }
         actions = {
-            set_if_stats;
+            if_count;
             NoAction;
         }
         size = 256;
