@@ -139,20 +139,7 @@ control MyIngress(
             }
     };
 
-    Register<bit<32>, bit<9>>(512, 0) port_rx_octets;
-    RegisterAction<bit<64>, bit<9>, bit<64>>(port_rx_octets)
-    add_octets = {
-        void apply(inout bit<64> v, out bit<64> new_val) {
-            v = v + meta.pkt_bytes;
-            new_val = v;
-        }
-    };
-    RegisterAction<bit<64>, bit<9>, bit<64>>(port_rx_octets)
-    read_octets = {
-        void apply(inout bit<64> v, out bit<64> read_val) {
-            read_val = v;
-        }
-    };
+   
 
     action send_multicast(bit<16> grp_id, bit<16> rid) {
         ig_tm_md.mcast_grp_a = grp_id;
