@@ -43,6 +43,7 @@ parser MyIngressParser(packet_in pkt,
 
     state parse_raw_128 {
         pkt.extract(hdr.raw_128);   // 直接吃 128 bytes
+        meta.raw_128_data = (bit<1024>)hdr.raw_128.data;
         transition accept;
     }
    
@@ -239,7 +240,7 @@ control MyIngress(
             hdr.raw_record.frame_length = (bit<32>)558;
             hdr.raw_record.payload_removed = (bit<32>)4;
             hdr.raw_record.header_length = (bit<32>)128;
-            hdr.raw_record.header_bytes = (bit<1024>)hdr.raw_128.data;
+            hdr.raw_record.header_bytes = (bit<1024>)meta.raw_128_data;
             
             set_port_agent.apply();
             // // hdr.sample.setInvalid();
