@@ -137,36 +137,42 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("[counter] entry_get Error: {}".format(e))
             return 0
 
-    # ----------------------------
-    # NEW: write counter bytes into if_stats_tbl (rule style like others)
-    # table if_stats_tbl { key: ig_intr_md.ingress_port ; action set_if_stats(bit<64> ifInOctets) }
+        # ----------------------------
+    # NEW: write counter bytes into if_stats_tbl
+    # - first time: entry_add
+    # - after that: entry_mod (avoid "Already exists")
     # ----------------------------
     def update_if_stats_from_counter(self, ports):
-        keys = []
-        datas = []
-
         for p in ports:
             b = self.read_port_in_bytes(p)
 
-            keys.append(self.if_stats_tbl.make_key([
+            key = self.if_stats_tbl.make_key([
                 gc.KeyTuple("ig_intr_md.ingress_port", int(p))
-            ]))
-
-            datas.append(self.if_stats_tbl.make_data(
+            ])
+            data = self.if_stats_tbl.make_data(
                 [gc.DataTuple("ifInOctets", int(b))],
                 "MyIngress.set_if_stats"
-            ))
+            )
 
-        # 仿照你其他地方下 rule：一次 keys/datas entry_add
-        try:
-            self.if_stats_tbl.entry_add(self.dev_tgt, keys, datas)
-        except Exception as e_add:
-            # 已存在就改
+            # 先試著 mod（更新）
             try:
-                self.if_stats_tbl.entry_mod(self.dev_tgt, keys, datas)
+                self.if_stats_tbl.entry_mod(self.dev_tgt, [key], [data])
+                # 你想看每次更新的值可以開這行
+                # print("[if_stats] mod port={} ifInOctets={}".format(p, b))
+                continue
             except Exception as e_mod:
-                print("[if_stats] entry_add Error: {}".format(e_add))
+                # 如果是第一次還沒 entry，mod 會失敗，下面改用 add
+                pass
+
+            # 再試著 add（第一次建立）
+            try:
+                self.if_stats_tbl.entry_add(self.dev_tgt, [key], [data])
+                # print("[if_stats] add port={} ifInOctets={}".format(p, b))
+            except Exception as e_add:
+                # 如果 add 還是失敗，把兩個錯誤都印出來方便你 debug
                 print("[if_stats] entry_mod Error: {}".format(e_mod))
+                print("[if_stats] entry_add Error: {}".format(e_add))
+
 
     # ----------------------------
     # apply: ports
