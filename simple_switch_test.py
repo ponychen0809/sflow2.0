@@ -22,6 +22,7 @@ def _to_int(v):
         return int(vv)
     raise ValueError("Unsupported int value: {}".format(repr(v)))
 
+
 class SimpleSwitchTest(BfRuntimeTest):
     def setUp(self):
         self.client_id = 0
@@ -37,7 +38,6 @@ class SimpleSwitchTest(BfRuntimeTest):
             self.cfg = json.load(f)
 
         print("[CFG] loaded: {}".format(cfg_path))
-
 
         # 建 BFRT 連線
         BfRuntimeTest.setUp(self, self.client_id, self.p4_name)
@@ -70,12 +70,14 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.apply_timestamp_from_cfg()
 
         # threads
-        t1 = threading.Thread(target=self.send_pkt_every_second, daemon=True)
+        t1 = threading.Thread(target=self.send_pkt_every_second)
+        t1.daemon = True
         t1.start()
 
         # 只有 timestamp.enable=true 才跑更新 thread
         if bool(self.cfg.get("timestamp", {}).get("enable", True)):
-            t2 = threading.Thread(target=self.update_ts_every_second, daemon=True)
+            t2 = threading.Thread(target=self.update_ts_every_second)
+            t2.daemon = True
             t2.start()
 
         while True:
@@ -110,9 +112,11 @@ class SimpleSwitchTest(BfRuntimeTest):
             ])
 
             self.port_table.entry_add(self.dev_tgt, keys, [data] * len(keys))
-            print(f"[ports] added+enabled: {ports} (speed={speed}, fec={fec}, enable={enable})")
+            print("[ports] added+enabled: {} (speed={}, fec={}, enable={})".format(
+                ports, speed, fec, enable
+            ))
         except Exception as e:
-            print(f"[ports] Error: {e}")
+            print("[ports] Error: {}".format(e))
 
     # ----------------------------
     # apply: forwarding
@@ -133,9 +137,9 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         try:
             self.ing_tbl.entry_add(self.dev_tgt, keys, datas)
-            print(f"[forwarding] rules written: {len(rules)}")
+            print("[forwarding] rules written: {}".format(len(rules)))
         except Exception as e:
-            print(f"[forwarding] Error: {e}")
+            print("[forwarding] Error: {}".format(e))
 
     # ----------------------------
     # apply: sampling rate
@@ -152,14 +156,16 @@ class SimpleSwitchTest(BfRuntimeTest):
             in_p = int(r["ingress_port"])
             rate = int(r["rate"])
             keys.append(self.port_sampling_tbl.make_key([gc.KeyTuple("ig_intr_md.ingress_port", in_p)]))
-            datas.append(self.port_sampling_tbl.make_data([gc.DataTuple("sampling_rate", rate)],
-                                                         "MyIngress.set_sampling_rate"))
+            datas.append(self.port_sampling_tbl.make_data(
+                [gc.DataTuple("sampling_rate", rate)],
+                "MyIngress.set_sampling_rate"
+            ))
 
         try:
             self.port_sampling_tbl.entry_add(self.dev_tgt, keys, datas)
-            print(f"[sampling] rules written: {len(rules)}")
+            print("[sampling] rules written: {}".format(len(rules)))
         except Exception as e:
-            print(f"[sampling] Error: {e}")
+            print("[sampling] Error: {}".format(e))
 
     # ----------------------------
     # apply: port agent (based on hdr.sample.ingress_port)
@@ -188,9 +194,9 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         try:
             self.port_agent_tbl.entry_add(self.dev_tgt, keys, datas)
-            print(f"[port_agent] rules written: {len(rules)}")
+            print("[port_agent] rules written: {}".format(len(rules)))
         except Exception as e:
-            print(f"[port_agent] Error: {e}")
+            print("[port_agent] Error: {}".format(e))
 
     # ----------------------------
     # apply: mirror cfg (use your '$normal' style)
@@ -202,6 +208,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             return
 
         for r in rules:
+            sid = r.get("sid")
             try:
                 self.mirror_cfg_tbl.entry_add(
                     self.dev_tgt,
@@ -216,9 +223,11 @@ class SimpleSwitchTest(BfRuntimeTest):
                         gc.DataTuple("$max_pkt_len", int(r.get("max_pkt_len", 0)))
                     ], "$normal")]
                 )
-                print(f"[mirror_cfg] written: sid={r['sid']} dir={r.get('direction')} ucast={r.get('ucast_egress_port')}")
+                print("[mirror_cfg] written: sid={} dir={} ucast={}".format(
+                    r.get("sid"), r.get("direction"), r.get("ucast_egress_port")
+                ))
             except Exception as e:
-                print(f"[mirror_cfg] Error (sid={r.get('sid')}): {e}")
+                print("[mirror_cfg] Error (sid={}): {}".format(sid, e))
 
     # ----------------------------
     # apply: PRE (optional)
@@ -249,9 +258,9 @@ class SimpleSwitchTest(BfRuntimeTest):
                     gc.DataTuple("$DEV_PORT", int_arr_val=dev_ports)
                 ])]
             )
-            print(f"[pre.node] written: node_id={node_id}, dev_ports={dev_ports}")
+            print("[pre.node] written: node_id={}, dev_ports={}".format(node_id, dev_ports))
         except Exception as e:
-            print(f"[pre.node] Error: {e}")
+            print("[pre.node] Error: {}".format(e))
 
         # $pre.mgid
         try:
@@ -264,9 +273,9 @@ class SimpleSwitchTest(BfRuntimeTest):
                     gc.DataTuple("$MULTICAST_NODE_L1_XID", int_arr_val=[0])
                 ])]
             )
-            print(f"[pre.mgid] written: mgid={mgid} -> node_id={node_id}")
+            print("[pre.mgid] written: mgid={} -> node_id={}".format(mgid, node_id))
         except Exception as e:
-            print(f"[pre.mgid] Error: {e}")
+            print("[pre.mgid] Error: {}".format(e))
 
     # ----------------------------
     # apply: timestamp default entry
@@ -281,9 +290,9 @@ class SimpleSwitchTest(BfRuntimeTest):
         try:
             ts_data = self.ts_tbl.make_data([gc.DataTuple("ts", init_ts)], "MyIngress.set_ts")
             self.ts_tbl.default_entry_set(self.dev_tgt, ts_data)
-            print(f"[timestamp] default init={init_ts}")
+            print("[timestamp] default init={}".format(init_ts))
         except Exception as e:
-            print(f"[timestamp] Error: {e}")
+            print("[timestamp] Error: {}".format(e))
 
     # ----------------------------
     # threads
@@ -313,7 +322,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                 ts_data = self.ts_tbl.make_data([gc.DataTuple("ts", elapsed_sec)], "MyIngress.set_ts")
                 self.ts_tbl.default_entry_set(self.dev_tgt, ts_data)
             except Exception as e:
-                print(f"[timestamp] update Error: {e}")
+                print("[timestamp] update Error: {}".format(e))
             time.sleep(1)
 
     def cleanUp(self):
