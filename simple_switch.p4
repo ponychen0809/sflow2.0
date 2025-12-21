@@ -224,11 +224,11 @@ control MyIngress(
             hdr.udp.setValid();
             ig_dprsr_md.mirror_type  = 0;
             ig_tm_md.ucast_egress_port = 142;
+            bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
 
             bit<32> pkt_count;
-            pkt_count = read_pkt.execute(meta.sample_ing_port);
+            pkt_count = read_pkt.execute(tmp_idx);
             bit<32> sampled_count;
-            bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
             sampled_count = inc_sampled_pkt.execute(tmp_idx);
 
             hdr.sflow_sample.setValid();
