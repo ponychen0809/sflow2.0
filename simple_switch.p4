@@ -292,8 +292,8 @@ control MyIngress(
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             if(ig_intr_md.ingress_port == 320){
                 set_counter_sample_hdr();
-                hdr.sflow_flow.setInvalid();
-                hdr.raw_record.setInvalid();
+                // hdr.sflow_flow.setInvalid();
+                // hdr.raw_record.setInvalid();
                 // ig_tm_md.ucast_egress_port = 142;
                 // meta.sample_type = 2;
 
