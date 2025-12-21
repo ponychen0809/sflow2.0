@@ -119,7 +119,7 @@ control MyIngress(
                 read_val = v; 
             }
     };
-    Register<bit<32>, bit<9>>(512, 0) port_sampled_pkts;
+    Register<bit<32>, bit<32>>(512, 0) port_sampled_pkts;
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_sampled_pkts) 
         inc_sampled_pkt = {
             void apply(inout bit<32> v, out bit<32> new_val) {
