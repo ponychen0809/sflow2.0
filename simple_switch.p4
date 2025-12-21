@@ -103,6 +103,7 @@ control MyIngress(
                   inout ingress_intrinsic_metadata_for_deparser_t ig_dprsr_md,
                   inout ingress_intrinsic_metadata_for_tm_t ig_tm_md) {
 
+    Counter<bit<64>, bit<9>> port_in_bytes = Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES);
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_pkts) 
         inc_pkt = {
