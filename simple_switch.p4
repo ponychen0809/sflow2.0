@@ -377,11 +377,6 @@ control MyIngress(
                 meta.sample_type = 0;
                 pkt_count = inc_pkt.execute(idx);
                 set_pkt_count(idx);
-                if (hdr.ipv4.isValid()) {
-                    meta.pkt_bytes = 14 + (bit<64>)hdr.ipv4.total_len;  // 14=Ethernet header
-                } else {
-                    meta.pkt_bytes = 0;
-                }
                 if(pkt_count==0){   //送往recirc port
                     set_sampled_count(idx);
                     
