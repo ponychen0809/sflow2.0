@@ -292,7 +292,7 @@ control MyIngress(
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             if(ig_intr_md.ingress_port == 320){
-                set_counter_sample_hdr();
+                // set_counter_sample_hdr();
                 // ig_tm_md.ucast_egress_port = 142;
                 // meta.sample_type = 2;
 
