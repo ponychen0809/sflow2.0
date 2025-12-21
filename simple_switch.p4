@@ -321,7 +321,7 @@ control MyIngress(
                 hdr.sflow_hd.sequence_number = 1;
                 hdr.sflow_hd.uptime = (bit<32>)meta.ctrl_ts;
                 hdr.sflow_hd.samples = (bit<32>)1;  
-                
+
                 hdr.sflow_counter.sample_type = 2;
                 hdr.sflow_counter.sample_length = 168;
                 hdr.sflow_counter.sample_seq_num = 1;
@@ -360,7 +360,7 @@ control MyIngress(
                 hdr.if_record.ifOutOctets = 500;
                 hdr.if_record.ifOutUcastPkts = 600;
                 hdr.if_record.ifOutMulticastPkts = 700;
-                hdr.if_record.ifOutBroadcastPkts = 800
+                hdr.if_record.ifOutBroadcastPkts = 800;
                 hdr.if_record.ifOutDiscards = 0;
                 hdr.if_record.ifOutErrors = 0;
                 hdr.if_record.ifPromiscuousMode = 1;
