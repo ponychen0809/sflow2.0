@@ -179,7 +179,7 @@ struct my_metadata_t {
     bit<32>  pkt_count;
     bit<32> sampled_count;
     bit<32> sample_type;
-    bit<64> pkt_bytes;
+    bit<64> ifInOctets;
     bit<1024> raw_128_data;
     bit<1>  recirc;
 }

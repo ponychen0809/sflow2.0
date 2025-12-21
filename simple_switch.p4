@@ -165,6 +165,10 @@ control MyIngress(
         pkt_count = inc_port_rx.execute(idx);
         hdr.sample.pkt_count = pkt_count;
     }
+
+    action set_if_stats(bit<64> ifInOctets) {
+        meta.ifInOctets = ifInOctets;
+    }
     action set_counter_sample_hdr() {
         
         hdr.ethernet.setValid();
@@ -323,6 +327,17 @@ control MyIngress(
         }
         size = 1;
     }
+    table if_stats_tbl {
+        key = {
+            ig_intr_md.ingress_port : exact;
+        }
+        actions = {
+            set_if_stats;
+            NoAction;
+        }
+        size = 512;
+        default_action = NoAction;
+    }
     apply {
         t_set_ts.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
@@ -366,8 +381,10 @@ control MyIngress(
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             if(ig_intr_md.ingress_port == 320){
+                
                 set_counter_sample_hdr();
                 set_counter_sample_eth_record();
+                if_stats_tbl.apply();
                 set_counter_sample_if_record();
                 ig_tm_md.ucast_egress_port = 142;
                 meta.sample_type = 2;
