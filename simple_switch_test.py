@@ -3,12 +3,35 @@ import os
 import json
 import time
 import threading
+import sys
 
 import bfrt_grpc.client as gc
 from bfruntime_client_base_tests import BfRuntimeTest
 
 from ptf.testutils import send_packet
 from scapy.all import Ether, IP, UDP
+
+
+# ------------------------------------------------------------
+# NEW: 讓 Python 2.7 的 input() 變成「讀字串」(不 eval)
+# - 你後面照樣用 input("...") 不用改
+# - 程式內不出現 raw_input
+# ------------------------------------------------------------
+try:
+    import __builtin__  # Python2
+    def _safe_input(prompt=""):
+        try:
+            sys.stdout.write(prompt)
+            sys.stdout.flush()
+        except Exception:
+            pass
+        line = sys.stdin.readline()
+        if not line:
+            return ""
+        return line.rstrip("\n")
+    __builtin__.input = _safe_input
+except Exception:
+    pass
 
 
 def _to_int(v):
@@ -55,132 +78,19 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.port_agent_tbl = self.bfrt_info.table_get("MyIngress.set_port_agent")
         self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
 
-        # ---------- NEW: auto-find counter table: port_in_bytes ----------
-        self.port_in_bytes_tbl = self._find_table_by_contains("port_in_bytes")
-        if self.port_in_bytes_tbl is None:
-            # 如果你 P4 叫不同名字，這裡會直接中止，避免你以為有讀到
-            raise RuntimeError("Cannot find counter table containing 'port_in_bytes' in BFRT")
+        # ------------------------------------------------------------
+        # NEW: 你要更新的 table + 你要讀的 counter
+        # ------------------------------------------------------------
+        self.if_stats_tbl = self.bfrt_info.table_get("MyIngress.if_stats_tbl")
+        self.port_in_bytes_tbl = self.bfrt_info.table_get("MyIngress.port_in_bytes")
 
-        print("[FOUND] port_in_bytes counter table:", self.port_in_bytes_tbl.info.name_get())
-        print("[port_in_bytes] key fields :", self.port_in_bytes_tbl.info.key_field_names_get())
-        print("[port_in_bytes] data fields:", self.port_in_bytes_tbl.info.data_field_names_get())
-
-        # ---------- NEW: optional match-action table to be updated (if exists) ----------
-        # 你若有在 P4 加：
-        # table MyIngress.if_stats_tbl { key: ig_intr_md.ingress_port; action set_if_stats(bit<64> ifInOctets); }
-        # 這裡就會自動抓到並更新；沒有就略過
-        self.if_stats_tbl = None
-        try:
-            self.if_stats_tbl = self.bfrt_info.table_get("MyIngress.if_stats_tbl")
-            print("[FOUND] if_stats_tbl:", self.if_stats_tbl.info.name_get())
-            print("[if_stats_tbl] key fields :", self.if_stats_tbl.info.key_field_names_get())
-            print("[if_stats_tbl] data fields:", self.if_stats_tbl.info.data_field_names_get())
-        except Exception:
-            print("[INFO] MyIngress.if_stats_tbl not found (ok, will skip table update).")
+        # 你要讀/寫的 idx（可用 config 覆寫，不影響原本功能）
+        bs = self.cfg.get("before_send_update", {})
+        self.before_send_enable = bool(bs.get("enable", True))
+        self.before_send_idx = int(bs.get("counter_idx", 140))
 
         self.start_time = None
         self.cleanUp()
-
-    # ----------------------------
-    # BFRT helper: find table
-    # ----------------------------
-    def _find_table_by_contains(self, needle: str):
-        needle = needle.lower().strip()
-        try:
-            table_names = list(self.bfrt_info.table_dict.keys())
-        except Exception:
-            # 部分版本沒有 table_dict
-            try:
-                table_names = self.bfrt_info.table_list_get()
-            except Exception:
-                table_names = []
-
-        for name in table_names:
-            if needle in name.lower():
-                try:
-                    return self.bfrt_info.table_get(name)
-                except Exception:
-                    pass
-        return None
-
-    # ----------------------------
-    # BFRT helper: sync counter (so you read fresh value)
-    # ----------------------------
-    def _sync_counter_table(self, counter_tbl):
-        # 不同版本 operation 名字不一樣，兩種都試
-        for op in ("SyncCounters", "Sync"):
-            try:
-                counter_tbl.operations_execute(self.dev_tgt, op)
-                return
-            except Exception:
-                continue
-
-    # ----------------------------
-    # NEW: read counter bytes (port_in_bytes)
-    # ----------------------------
-    def read_port_in_bytes(self, idx: int) -> int:
-        """
-        Read BYTES counter value for given index.
-        idx = 你在 P4 內 port_in_bytes.count(idx) 的 idx
-        """
-        t = self.port_in_bytes_tbl
-
-        # sync to get latest
-        self._sync_counter_table(t)
-
-        key_fields = t.info.key_field_names_get()
-        if not key_fields:
-            raise RuntimeError("port_in_bytes counter table has no key fields?")
-        kf = key_fields[0]
-
-        key = t.make_key([gc.KeyTuple(kf, int(idx))])
-
-        # from_hw=True: 讀硬體值
-        for data, _ in t.entry_get(self.dev_tgt, [key], {"from_hw": True}):
-            d = data.to_dict()
-
-            # 嘗試找 "bytes" 欄位
-            for dk, dv in d.items():
-                if "bytes" in dk.lower():
-                    return int(dv)
-
-            # 如果找不到，直接把 dict 印出來（方便你看欄位名）
-            print("[read_port_in_bytes] Unexpected data dict:", d)
-            raise RuntimeError("Cannot find a 'bytes' field in counter data dict")
-
-        # 沒 entry 就回 0
-        return 0
-
-    # ----------------------------
-    # NEW: update if_stats table if exists
-    # ----------------------------
-    def update_if_stats_if_exists(self, ingress_port: int, if_in_octets: int):
-        """
-        If MyIngress.if_stats_tbl exists, update it:
-          key: ig_intr_md.ingress_port
-          action: MyIngress.set_if_stats
-          data: ifInOctets
-        If not exists, do nothing.
-        """
-        if self.if_stats_tbl is None:
-            return
-
-        t = self.if_stats_tbl
-
-        # 允許你用 config 覆蓋欄位/動作名字（不同 P4 你可能取不同名）
-        upd_cfg = self.cfg.get("if_stats_update", {})
-        key_name = upd_cfg.get("key", "ig_intr_md.ingress_port")
-        action_name = upd_cfg.get("action", "MyIngress.set_if_stats")
-        field_name = upd_cfg.get("field", "ifInOctets")
-
-        key = t.make_key([gc.KeyTuple(key_name, int(ingress_port))])
-        data = t.make_data([gc.DataTuple(field_name, int(if_in_octets))], action_name)
-
-        # entry_mod 不存在會失敗 -> fallback entry_add
-        try:
-            t.entry_mod(self.dev_tgt, [key], [data])
-        except Exception:
-            t.entry_add(self.dev_tgt, [key], [data])
 
     def runTest(self):
         self.start_time = time.time()
@@ -323,7 +233,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("[port_agent] Error: {}".format(e))
 
     # ----------------------------
-    # apply: mirror cfg
+    # apply: mirror cfg (use your '$normal' style)
     # ----------------------------
     def apply_mirror_cfg_from_cfg(self):
         rules = self.cfg.get("mirror_cfg", [])
@@ -418,6 +328,76 @@ class SimpleSwitchTest(BfRuntimeTest):
         except Exception as e:
             print("[timestamp] Error: {}".format(e))
 
+    # ------------------------------------------------------------
+    # NEW: 讀 port_in_bytes counter (BYTES) & 更新 if_stats_tbl
+    # ------------------------------------------------------------
+    def _sync_counters_best_effort(self, tbl):
+        # 不同版本可能叫不同 operation，逐個試
+        for op in ["SyncCounters", "Sync", "sync_counters", "SyncHw", "SyncFromHw"]:
+            try:
+                tbl.operations_execute(self.dev_tgt, op)
+                return
+            except Exception:
+                pass
+
+    def read_port_in_bytes(self, idx):
+        # sync (best effort)
+        try:
+            self._sync_counters_best_effort(self.port_in_bytes_tbl)
+        except Exception as e:
+            print("[counter] sync warning: {}".format(e))
+
+        # key field name (取第一個)
+        try:
+            key_fields = self.port_in_bytes_tbl.info.key_field_names_get()
+        except Exception as e:
+            print("[counter] key_field_names_get Error: {}".format(e))
+            key_fields = []
+
+        if not key_fields:
+            raise RuntimeError("counter table has no key field")
+
+        key_name = key_fields[0]
+        key = self.port_in_bytes_tbl.make_key([gc.KeyTuple(key_name, int(idx))])
+
+        # 讀 entry
+        try:
+            it = self.port_in_bytes_tbl.entry_get(self.dev_tgt, [key], {"from_hw": True})
+        except Exception:
+            it = self.port_in_bytes_tbl.entry_get(self.dev_tgt, [key])
+
+        for data, _ in it:
+            d = data.to_dict()
+            # 找 bytes 欄位
+            for k, v in d.items():
+                if "bytes" in str(k).lower():
+                    try:
+                        return long(v)  # py2
+                    except Exception:
+                        return int(v)
+            raise RuntimeError("cannot find bytes field in counter data: {}".format(d))
+
+        return 0
+
+    def update_if_stats_tbl(self, ingress_port, ifInOctets):
+        key = self.if_stats_tbl.make_key([
+            gc.KeyTuple("ig_intr_md.ingress_port", int(ingress_port))
+        ])
+
+        data = self.if_stats_tbl.make_data([
+            gc.DataTuple("ifInOctets", long(ifInOctets))
+        ], "MyIngress.set_if_stats")
+
+        try:
+            try:
+                self.if_stats_tbl.entry_mod(self.dev_tgt, [key], [data])
+            except Exception:
+                self.if_stats_tbl.entry_add(self.dev_tgt, [key], [data])
+
+            print("[if_stats] updated: port={} ifInOctets={}".format(ingress_port, ifInOctets))
+        except Exception as e:
+            print("[if_stats] update Error: {}".format(e))
+
     # ----------------------------
     # threads
     # ----------------------------
@@ -429,44 +409,25 @@ class SimpleSwitchTest(BfRuntimeTest):
             b"test"
         )
 
-        test_cfg = self.cfg.get("test", {})
-        send_port = int(test_cfg.get("send_port", 320))
-
-        # 你要讀哪個 idx 的 counter（預設跟 send_port 一樣）
-        # 注意：如果你的 P4 只在 140/143 count，那 counter_idx 要改成 140/143 或你要改 P4
-        counter_idx = int(test_cfg.get("counter_idx", send_port))
-
-        # 是否要把讀到的值回寫 table（如果 table 存在）
-        enable_table_update = bool(test_cfg.get("enable_table_update", True))
-
         count = 0
-        input(f"按 Enter 後開始每秒送封包到 PTF port {send_port}...\n")
+        input("按 Enter 後開始每秒送封包到 PTF port 320...\n")
 
         while True:
-            count += 1
-
-            # ---- BEFORE SEND: read counter ----
-            try:
-                before_bytes = self.read_port_in_bytes(counter_idx)
-                print(f"[counter] BEFORE send: idx={counter_idx} bytes={before_bytes}")
-            except Exception as e:
-                before_bytes = None
-                print(f"[counter] read error (idx={counter_idx}): {e}")
-
-            # ---- BEFORE SEND: update table (optional) ----
-            if enable_table_update and before_bytes is not None:
+            # ----------------------------
+            # NEW: 送封包前讀一次 + 更新 table
+            # ----------------------------
+            if self.before_send_enable:
                 try:
-                    # 常見做法是用 ingress_port 當 key
-                    self.update_if_stats_if_exists(counter_idx, before_bytes)
-                    if self.if_stats_tbl is not None:
-                        print(f"[if_stats_tbl] updated: port={counter_idx} ifInOctets={before_bytes}")
+                    idx = int(self.before_send_idx)
+                    bytes_now = self.read_port_in_bytes(idx)
+                    print("[counter] BEFORE send: idx={} bytes={}".format(idx, bytes_now))
+                    self.update_if_stats_tbl(idx, bytes_now)
                 except Exception as e:
-                    print(f"[if_stats_tbl] update error: {e}")
+                    print("[counter] read/update Error: {}".format(e))
 
-            # ---- SEND ----
-            print("{}, send_packet() to port {}".format(count, send_port))
-            send_packet(self, send_port, pkt)
-
+            count += 1
+            print("{}, send_packet() to port 320".format(count))
+            send_packet(self, 320, pkt)
             time.sleep(1)
 
     def update_ts_every_second(self):
