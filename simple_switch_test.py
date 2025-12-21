@@ -16,12 +16,11 @@ def _to_int(v):
     if isinstance(v, int):
         return v
     if isinstance(v, str):
-        v = v.strip().lower()
-        if v.startswith("0x"):
-            return int(v, 16)
-        return int(v)
-    raise ValueError(f"Unsupported int value: {v!r}")
-
+        vv = v.strip().lower()
+        if vv.startswith("0x"):
+            return int(vv, 16)
+        return int(vv)
+    raise ValueError("Unsupported int value: {}".format(repr(v)))
 
 class SimpleSwitchTest(BfRuntimeTest):
     def setUp(self):
@@ -32,16 +31,13 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         # ---- load config ----
         script_dir = os.path.dirname(os.path.abspath(__file__))
+        cfg_path = os.environ.get("SWITCH_CFG", os.path.join(script_dir, "config.json"))
 
-        cfg_path = os.environ.get(
-            "SWITCH_CFG",
-            os.path.join(script_dir, "config.json")
-        )
-
-        with open(cfg_path, "r", encoding="utf-8") as f:
+        with open(cfg_path, "r") as f:
             self.cfg = json.load(f)
 
-        print(f"[CFG] loaded: {cfg_path}")
+        print("[CFG] loaded: {}".format(cfg_path))
+
 
         # 建 BFRT 連線
         BfRuntimeTest.setUp(self, self.client_id, self.p4_name)
