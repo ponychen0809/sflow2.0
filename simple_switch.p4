@@ -166,7 +166,7 @@ control MyIngress(
         hdr.sample.pkt_count = pkt_count;
     }
 
-    action set_if_stats(bit<64> ifInOctets) {
+    action set_if_stats(bit<32> ifInOctets) {
         meta.ifInOctets = ifInOctets;
     }
     action set_counter_sample_hdr() {
