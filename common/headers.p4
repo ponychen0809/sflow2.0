@@ -241,14 +241,14 @@ header sflow_if_record { //152byte
     bit<64> ifSpeed;
     bit<32> ifDirection;
     bit<32> ifStatus;
-    bit<32> ifInOctets;
+    bit<64> ifInOctets;
     bit<32> ifInUcastPkts;
     bit<32> ifInMulticastPkts;
     bit<32> ifInBroadcastPkts;
     bit<32> ifInDiscards;
     bit<32> ifInErrors;
     bit<32> ifInUnknownProtos;
-    bit<32> ifOutOctets;
+    bit<64> ifOutOctets;
     bit<32> ifOutUcastPkts;
     bit<32> ifOutMulticastPkts;
     bit<32> ifOutBroadcastPkts;
