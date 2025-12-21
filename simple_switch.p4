@@ -253,11 +253,6 @@ control MyIngress(
             hdr.udp.setValid();
             ig_dprsr_md.mirror_type  = 0;
             ig_tm_md.ucast_egress_port = 142;
-            // t_sample_stats.apply();
-            // bit<32> pkt_count;
-            // pkt_count = read_pkt.execute(tmp_idx);
-            // bit<32> sampled_count;
-            // sampled_count = inc_sampled_pkt.execute(tmp_idx);
 
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
@@ -299,8 +294,8 @@ control MyIngress(
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    hdr.sample.pkt_count = (bit<32>)read_pkt.execute(idx);
-                    hdr.sample.sampled_count = (bit<32>)inc_sampled_pkt.execute(idx);
+                    hdr.sample.pkt_count = pkt_count;
+                    // hdr.sample.sampled_count = (bit<32>)inc_sampled_pkt.execute(idx);
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
