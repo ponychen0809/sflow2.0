@@ -280,16 +280,16 @@ control MyIngress(
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             if(ig_intr_md.ingress_port == 320){
-                // hdr.sflow_flow.setInvalid();
-                // hdr.raw_record.setInvalid();
-                // hdr.ethernet.setValid();
-                // hdr.ipv4.setValid();
-                // hdr.tcp.setValid();
-                // hdr.udp.setValid();
-                // hdr.sflow_hd.setValid();
-                // hdr.sflow_counter.setValid();
-                // hdr.eth_record.setValid();
-                // hdr.if_record.setValid();
+                hdr.sflow_flow.setInvalid();
+                hdr.raw_record.setInvalid();
+                hdr.ethernet.setValid();
+                hdr.ipv4.setValid();
+                hdr.tcp.setValid();
+                hdr.udp.setValid();
+                hdr.sflow_hd.setValid();
+                hdr.sflow_counter.setValid();
+                hdr.eth_record.setValid();
+                hdr.if_record.setValid();
                 // ig_tm_md.ucast_egress_port = 142;
                 // meta.sample_type = 2;
 
