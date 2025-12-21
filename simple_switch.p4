@@ -169,7 +169,7 @@ control MyIngress(
         hdr.sflow_hd.address_type = (bit<32>)1;
         hdr.sflow_hd.agent_addr = (bit<32>)agent_addr;
         hdr.sflow_hd.sub_agent_id = (bit<32>)agent_id;
-        hdr.sflow_hd.sequence_number = (bit<32>)5;
+        hdr.sflow_hd.sequence_number = (bit<32>)meta.sampled_count;
         hdr.sflow_hd.uptime = (bit<32>)meta.ctrl_ts;
         hdr.sflow_hd.samples = (bit<32>)1;  
     }
@@ -257,7 +257,7 @@ control MyIngress(
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)184;
-            hdr.sflow_sample.sample_seq_num = (bit<32>)meta.sampled_count;
+            hdr.sflow_sample.sample_seq_num = (bit<32>)1;
             hdr.sflow_sample.source_id = (bit<32>)meta.sample_ing_port;
             hdr.sflow_sample.sampling_rate = (bit<32>)meta.sampling_rate+1;
             hdr.sflow_sample.sample_pool = (bit<32>)meta.pkt_count;
