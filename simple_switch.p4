@@ -119,7 +119,7 @@ control MyIngress(
                 read_val = v; 
             }
     };
-    Register<bit<32>, bit<32>>(512, 0) port_sampled_pkts;
+    Register<bit<32>, bit<9>>(512, 0) port_sampled_pkts;
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_sampled_pkts) 
         inc_sampled_pkt = {
             void apply(inout bit<32> v, out bit<32> new_val) {
@@ -228,7 +228,8 @@ control MyIngress(
             bit<32> pkt_count;
             pkt_count = read_pkt.execute(meta.sample_ing_port);
             bit<32> sampled_count;
-            sampled_count = inc_sampled_pkt.execute(meta.sample_ing_port);
+            bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
+            sampled_count = inc_sampled_pkt.execute(tmp_idx);
 
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
