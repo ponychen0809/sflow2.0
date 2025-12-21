@@ -115,7 +115,15 @@ control MyIngress(
     };
     RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) 
         read_pkt = {
+            void apply(inout bit<32> v, out bit<32> read_val) {
+                new_val = v; 
+            }
+    };
+    Register<bit<32>, bit<9>>(512, 0) port_sampled_pkts;
+    RegisterAction<bit<32>, bit<9>,bit<32>>(port_sampled_pkts) 
+        inc_sampled_pkt = {
             void apply(inout bit<32> v, out bit<32> new_val) {
+                v       = v + 1;
                 new_val = v; 
             }
     };
@@ -214,16 +222,21 @@ control MyIngress(
             hdr.ethernet.setValid();
             hdr.ipv4.setValid();
             hdr.udp.setValid();
-            ig_dprsr_md.mirror_type  =0;
+            ig_dprsr_md.mirror_type  = 0;
             ig_tm_md.ucast_egress_port = 142;
-            
+
+            bit<32> pkt_count;
+            pkt_count = read_pkt.execute(meta.sample_ing_port);
+            bit<32> sampled_count;
+            sampled_count = inc_sampled_pkt.execute(meta.sample_ing_port);
+
             hdr.sflow_sample.setValid();
             hdr.sflow_sample.sample_type = (bit<32>)1;
             hdr.sflow_sample.sample_length = (bit<32>)184;
-            hdr.sflow_sample.sample_seq_num = (bit<32>)1;
+            hdr.sflow_sample.sample_seq_num = (bit<32>)sampled_count;
             hdr.sflow_sample.source_id = (bit<32>)meta.sample_ing_port;
             hdr.sflow_sample.sampling_rate = (bit<32>)meta.sampling_rate+1;
-            hdr.sflow_sample.sample_pool = (bit<32>)1;
+            hdr.sflow_sample.sample_pool = (bit<32>)pkt_count;
             hdr.sflow_sample.drops = (bit<32>)0;
             hdr.sflow_sample.input_if = (bit<32>)meta.sample_ing_port;
             hdr.sflow_sample.output_if = (bit<32>)0;
@@ -244,8 +257,8 @@ control MyIngress(
         }        
         else{
             hdr.sample.setValid();
-            ingress_port_forward.apply();
-            port_sampling_rate.apply();
+            ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
+            port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             if(ig_intr_md.ingress_port == 320){
                 ig_tm_md.ucast_egress_port = 142;
             }
@@ -257,7 +270,6 @@ control MyIngress(
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    // hdr.sample.magic = 0xABCD;
                     
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
