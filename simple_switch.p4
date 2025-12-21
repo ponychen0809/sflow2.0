@@ -37,7 +37,7 @@ parser MyIngressParser(packet_in pkt,
         // pkt.extract(hdr.sample);
         pkt.extract(hdr.sample);
         meta.sample_ing_port = (bit<32>)hdr.sample.ingress_port;
-        meta.sampling_rate = (bit<32>)hdr.sample.sampling_rate;
+        meta.sampling_rate = (bit<32>)hdr.sample.sampling_rate +1;
         transition parse_raw_128;  // 接著去 parse_raw_128
     }
 
