@@ -124,9 +124,17 @@ control MyIngress(
     Register<bit<32>, bit<9>>(512, 0) port_sampled_pkts;
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_sampled_pkts) 
         inc_sampled_pkt = {
-            void apply(inout bit<32> v, out bit<32> new_val) {
+            void apply(inout bit<32> v, out bit<32> read_val) {
                 v       = v + 1;
-                new_val = v; 
+                read_val = v; 
+            }
+    };
+    Register<bit<32>, bit<9>>(512, 0) port_rx_count;
+    RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_count) 
+        inc_port_rx = {
+            void apply(inout bit<32> v, out bit<32> read_val) {
+                v       = v + 1;
+                read_val = v; 
             }
     };
 
@@ -148,6 +156,13 @@ control MyIngress(
         sampled_count = inc_sampled_pkt.execute(idx);
         hdr.sample.sampled_count = sampled_count;
     }
+
+    action set_pkt_count(bit<9> idx) {
+        bit<32> pkt_count;
+        pkt_count = inc_port_rx.execute(idx);
+        hdr.sample.pkt_count = pkt_count;
+    }
+
     action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
         hdr.ethernet.src_addr = 0x001122334455;
         hdr.ethernet.dst_addr = 0x001b21bcaad3;
@@ -178,32 +193,7 @@ control MyIngress(
         hdr.sflow_hd.uptime = (bit<32>)meta.ctrl_ts;
         hdr.sflow_hd.samples = (bit<32>)1;  
     }
-    // action do_sample_stats(){
-    //     bit<9> p = (bit<9>) meta.sample_ing_port;
 
-    //     // 你原本那兩行放進來
-    //     bit<32> pkt_count;
-    //     pkt_count = read_pkt.execute(p);
-
-    //     bit<32> sampled_count;
-    //     sampled_count = inc_sampled_pkt.execute(p);
-
-    //     // 把結果存回 meta，後面組 sFlow 用
-    //     meta.pkt_count = pkt_count;
-    //     meta.sampled_count = sampled_count;
-    // }
-
-    // table t_sample_stats {
-    //     key = {
-    //         meta.sample_ing_port : exact;
-    //     }
-    //     actions = {
-    //         do_sample_stats;
-    //         NoAction;
-    //     }
-    //     size = 512;
-    //     default_action = NoAction();
-    // }
 
     table ingress_port_forward {
         key = {
@@ -294,9 +284,10 @@ control MyIngress(
             bit<32> pkt_count;
             if(idx==140 || idx == 143){
                 pkt_count = inc_pkt.execute(idx);
-                
+                set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
                     set_sampled_count(idx);
+                    
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
