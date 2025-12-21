@@ -38,6 +38,8 @@ parser MyIngressParser(packet_in pkt,
         pkt.extract(hdr.sample);
         meta.sample_ing_port = (bit<32>)hdr.sample.ingress_port;
         meta.sampling_rate = (bit<32>)hdr.sample.sampling_rate ;
+        meta.pkt_count = (bit<32>)hdr.sample.pkt_count;
+        meta.sampled_count = (bit<32>)hdr.sample.sampled_count;
         transition parse_raw_128;  // 接著去 parse_raw_128
     }
 
@@ -171,32 +173,32 @@ control MyIngress(
         hdr.sflow_hd.uptime = (bit<32>)meta.ctrl_ts;
         hdr.sflow_hd.samples = (bit<32>)1;  
     }
-    action do_sample_stats(){
-        bit<9> p = (bit<9>) meta.sample_ing_port;
+    // action do_sample_stats(){
+    //     bit<9> p = (bit<9>) meta.sample_ing_port;
 
-        // 你原本那兩行放進來
-        bit<32> pkt_count;
-        pkt_count = read_pkt.execute(p);
+    //     // 你原本那兩行放進來
+    //     bit<32> pkt_count;
+    //     pkt_count = read_pkt.execute(p);
 
-        bit<32> sampled_count;
-        sampled_count = inc_sampled_pkt.execute(p);
+    //     bit<32> sampled_count;
+    //     sampled_count = inc_sampled_pkt.execute(p);
 
-        // 把結果存回 meta，後面組 sFlow 用
-        meta.pkt_count = pkt_count;
-        meta.sampled_count = sampled_count;
-    }
+    //     // 把結果存回 meta，後面組 sFlow 用
+    //     meta.pkt_count = pkt_count;
+    //     meta.sampled_count = sampled_count;
+    // }
 
-    table t_sample_stats {
-        key = {
-            meta.sample_ing_port : exact;
-        }
-        actions = {
-            do_sample_stats;
-            NoAction;
-        }
-        size = 512;
-        default_action = NoAction();
-    }
+    // table t_sample_stats {
+    //     key = {
+    //         meta.sample_ing_port : exact;
+    //     }
+    //     actions = {
+    //         do_sample_stats;
+    //         NoAction;
+    //     }
+    //     size = 512;
+    //     default_action = NoAction();
+    // }
 
     table ingress_port_forward {
         key = {
@@ -251,7 +253,7 @@ control MyIngress(
             hdr.udp.setValid();
             ig_dprsr_md.mirror_type  = 0;
             ig_tm_md.ucast_egress_port = 142;
-            t_sample_stats.apply();
+            // t_sample_stats.apply();
             // bit<32> pkt_count;
             // pkt_count = read_pkt.execute(tmp_idx);
             // bit<32> sampled_count;
@@ -297,7 +299,8 @@ control MyIngress(
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    
+                    hdr.sample.pkt_count = (bit<32>)read_pkt.execute(idx);
+                    hdr.sample.sampled_count = (bit<32>)inc_sampled_pkt.execute(idx);
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
