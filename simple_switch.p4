@@ -389,8 +389,15 @@ control MyIngress(
                 meta.sample_type = 0;
                 pkt_count = inc_pkt.execute(idx);
                 set_pkt_count(idx);
+                if (hdr.ipv4.isValid()) {
+                    meta.pkt_bytes = 14 + (bit<64>)hdr.ipv4.total_len;  // 14=Ethernet header
+                } else {
+                    meta.pkt_bytes = 0;
+                }
+                add_octets.execute(idx);
                 if(pkt_count==0){   //送往recirc port
                     set_sampled_count(idx);
+                    
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
