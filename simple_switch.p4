@@ -243,23 +243,24 @@ control MyIngress(
         // bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
 
         if(ig_intr_md.ingress_port == 36){
+            meta.sample_type = 1;
             hdr.ethernet.setValid();
             hdr.ipv4.setValid();
             hdr.udp.setValid();
             ig_dprsr_md.mirror_type  = 0;
             ig_tm_md.ucast_egress_port = 142;
 
-            hdr.sflow_sample.setValid();
-            hdr.sflow_sample.sample_type = (bit<32>)1;
-            hdr.sflow_sample.sample_length = (bit<32>)184;
-            hdr.sflow_sample.sample_seq_num = (bit<32>)1;
-            hdr.sflow_sample.source_id = (bit<32>)meta.sample_ing_port;
-            hdr.sflow_sample.sampling_rate = (bit<32>)meta.sampling_rate+1;
-            hdr.sflow_sample.sample_pool = (bit<32>)meta.pkt_count;
-            hdr.sflow_sample.drops = (bit<32>)0;
-            hdr.sflow_sample.input_if = (bit<32>)meta.sample_ing_port;
-            hdr.sflow_sample.output_if = (bit<32>)0;
-            hdr.sflow_sample.record_count = (bit<32>)1;
+            hdr.sflow_flow.setValid();
+            hdr.sflow_flow.sample_type = (bit<32>)1;
+            hdr.sflow_flow.sample_length = (bit<32>)184;
+            hdr.sflow_flow.sample_seq_num = (bit<32>)1;
+            hdr.sflow_flow.source_id = (bit<32>)meta.sample_ing_port;
+            hdr.sflow_flow.sampling_rate = (bit<32>)meta.sampling_rate+1;
+            hdr.sflow_flow.sample_pool = (bit<32>)meta.pkt_count;
+            hdr.sflow_flow.drops = (bit<32>)0;
+            hdr.sflow_flow.input_if = (bit<32>)meta.sample_ing_port;
+            hdr.sflow_flow.output_if = (bit<32>)0;
+            hdr.sflow_flow.record_count = (bit<32>)1;
             
             hdr.raw_record.setValid();
             hdr.raw_record.record_type = (bit<32>)1;
@@ -279,20 +280,101 @@ control MyIngress(
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             if(ig_intr_md.ingress_port == 320){
+                hdr.sflow_flow.setInvalid();
+                hdr.raw_record.setInvalid();
+                hdr.ethernet.setValid();
+                hdr.ipv4.setValid();
+                hdr.tcp.setValid();
+                hdr.udp.setValid();
+                hdr.sflow_hd.setValid();
+                hdr.sflow_counter.setValid();
+                hdr.eth_record.setValid();
+                hdr.if_record.setValid();
                 ig_tm_md.ucast_egress_port = 142;
+                meta.sample_type = 2;
+
+                hdr.ethernet.src_addr = 0x001122334455;
+                hdr.ethernet.dst_addr = 0x001b21bcaad3;
+                hdr.ethernet.ether_type = 0x0800;
+                hdr.ipv4.version=4;
+                hdr.ipv4.ihl=0x45;
+                hdr.ipv4.diffserv     = 0;
+                hdr.ipv4.total_len = 248;
+                hdr.ipv4.identification = 0; 
+                hdr.ipv4.flags        = 2;
+                hdr.ipv4.frag_offset  = 0; 
+                hdr.ipv4.ttl          = 64;
+                hdr.ipv4.protocol     = 17; 
+                hdr.ipv4.src_addr = 0x0a0a0308;
+                hdr.ipv4.dst_addr = 0x0a0a0303;
+                
+                hdr.udp.src_port = (bit<16>)8888;
+                hdr.udp.dst_port = (bit<16>)6343;
+                hdr.udp.hdr_length = (bit<16>)212;
+
+
+                hdr.sflow_hd.setValid();
+                hdr.sflow_hd.version = (bit<32>)5;
+                hdr.sflow_hd.address_type = (bit<32>)1;
+                hdr.sflow_hd.agent_addr = 0x0a0a0a08;
+                hdr.sflow_hd.sub_agent_id = 1;
+                hdr.sflow_hd.sequence_number = 1;
+                hdr.sflow_hd.uptime = (bit<32>)meta.ctrl_ts;
+                hdr.sflow_hd.samples = (bit<32>)1;  
+                
+                hdr.sflow_counter.sample_type = 2;
+                hdr.sflow_counter.sample_length = 168;
+                hdr.sflow_counter.sample_seq_num = 1;
+                hdr.sflow_counter.source_id = 140;
+                hdr.sflow_counter.record_count = 2;
+
+                hdr.eth_record.record_type = 2;
+                hdr.eth_record.record_length = 52;
+                hdr.eth_record.dot3StatsAlignmentErrors = 0;
+                hdr.eth_record.dot3StatsFCSErrors = 0;
+                hdr.eth_record.dot3StatsSingleCollisionFrames = 0;
+                hdr.eth_record.dot3StatsMultipleCollisionFrames = 0;
+                hdr.eth_record.dot3StatsSQETestErrors = 0;
+                hdr.eth_record.dot3StatsDeferredTransmissions = 0;
+                hdr.eth_record.dot3StatsLateCollisions = 0;
+                hdr.eth_record.dot3StatsExcessiveCollisions = 0;
+                hdr.eth_record.dot3StatsInternalMacTxErrors = 0;
+                hdr.eth_record.dot3StatsCarrierSenseErrors = 0;
+                hdr.eth_record.dot3StatsFrameTooLongs = 0;
+                hdr.eth_record.dot3StatsInternalMacRxErrors = 0;
+                hdr.eth_record.dot3StatsSymbolErrors = 0;
+
+                hdr.if_record.record_type = 1;
+                hdr.if_record.record_length = 88;
+                hdr.if_record.ifIndex = 1;
+                hdr.if_record.ifType = 6;
+                hdr.if_record.ifSpeed = 1000000000;
+                hdr.if_record.ifDirection = 1;
+                hdr.if_record.ifStatus = 1;
+                hdr.if_record.ifInOctets = 100;
+                hdr.if_record.ifInUcastPkts = 200;
+                hdr.if_record.ifInMulticastPkts = 300;
+                hdr.if_record.ifInBroadcastPkts = 400;
+                hdr.if_record.ifInDiscards = 0;
+                hdr.if_record.ifInErrors = 0;
+                hdr.if_record.ifOutOctets = 500;
+                hdr.if_record.ifOutUcastPkts = 600;
+                hdr.if_record.ifOutMulticastPkts = 700;
+                hdr.if_record.ifOutBroadcastPkts = 800
+                hdr.if_record.ifOutDiscards = 0;
+                hdr.if_record.ifOutErrors = 0;
+                hdr.if_record.ifPromiscuousMode = 1;
             }
             bit<32> pkt_count;
             if(idx==140 || idx == 143){
+                meta.sample_type = 0;
                 pkt_count = inc_pkt.execute(idx);
                 set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
                     set_sampled_count(idx);
-                    // set_pkt_count(idx);
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    // hdr.sample.pkt_count = pkt_count;
-                    
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
@@ -332,7 +414,7 @@ control MyIngressDeparser(packet_out pkt,
                 hdr.ipv4.dst_addr
             });
         }
-        if(hdr.sflow_hd.isValid()){
+        if(hdr.sflow_hd.isValid() && meta.sample_type == 1){
             if (hdr.ipv4.isValid() && hdr.udp.isValid() ) {
                     hdr.udp.checksum = udp_checksum.update({
                     hdr.ipv4.src_addr,
@@ -352,16 +434,16 @@ control MyIngressDeparser(packet_out pkt,
                     hdr.sflow_hd.uptime,
                     hdr.sflow_hd.samples,
 
-                    hdr.sflow_sample.sample_type,
-                    hdr.sflow_sample.sample_length,
-                    hdr.sflow_sample.sample_seq_num,
-                    hdr.sflow_sample.source_id,
-                    hdr.sflow_sample.sampling_rate,
-                    hdr.sflow_sample.sample_pool,
-                    hdr.sflow_sample.drops,
-                    hdr.sflow_sample.input_if,
-                    hdr.sflow_sample.output_if,
-                    hdr.sflow_sample.record_count,
+                    hdr.sflow_flow.sample_type,
+                    hdr.sflow_flow.sample_length,
+                    hdr.sflow_flow.sample_seq_num,
+                    hdr.sflow_flow.source_id,
+                    hdr.sflow_flow.sampling_rate,
+                    hdr.sflow_flow.sample_pool,
+                    hdr.sflow_flow.drops,
+                    hdr.sflow_flow.input_if,
+                    hdr.sflow_flow.output_if,
+                    hdr.sflow_flow.record_count,
 
                     hdr.raw_record.record_type,
                     hdr.raw_record.record_length,
@@ -373,6 +455,71 @@ control MyIngressDeparser(packet_out pkt,
                 });
             }
         }
+        if(hdr.sflow_hd.isValid() && meta.sample_type == 2){
+            if (hdr.ipv4.isValid() && hdr.udp.isValid() ) {
+                    hdr.udp.checksum = udp_checksum.update({
+                    hdr.ipv4.src_addr,
+                    hdr.ipv4.dst_addr,
+                    8w0,
+                    hdr.ipv4.protocol,
+                    hdr.udp.hdr_length,
+                    hdr.udp.src_port,
+                    hdr.udp.dst_port,
+                    hdr.udp.hdr_length,
+                    16w0,              // placeholder for checksum
+                    hdr.sflow_hd.version,
+                    hdr.sflow_hd.address_type,
+                    hdr.sflow_hd.agent_addr,
+                    hdr.sflow_hd.sub_agent_id,
+                    hdr.sflow_hd.sequence_number,
+                    hdr.sflow_hd.uptime,
+                    hdr.sflow_hd.samples,
+
+                    hdr.sflow_counter.sample_type,
+                    hdr.sflow_counter.sample_length,
+                    hdr.sflow_counter.sample_seq_num,
+                    hdr.sflow_counter.source_id,
+                    hdr.sflow_counter.record_count,
+
+                    hdr.eth_record.record_type,
+                    hdr.eth_record.record_length,
+                    hdr.eth_record.dot3StatsAlignmentErrors,
+                    hdr.eth_record.dot3StatsFCSErrors,
+                    hdr.eth_record.dot3StatsSingleCollisionFrames,
+                    hdr.eth_record.dot3StatsMultipleCollisionFrames,
+                    hdr.eth_record.dot3StatsSQETestErrors,
+                    hdr.eth_record.dot3StatsDeferredTransmissions,
+                    hdr.eth_record.dot3StatsLateCollisions,
+                    hdr.eth_record.dot3StatsExcessiveCollisions,
+                    hdr.eth_record.dot3StatsInternalMacTxErrors,
+                    hdr.eth_record.dot3StatsCarrierSenseErrors,
+                    hdr.eth_record.dot3StatsFrameTooLongs,
+                    hdr.eth_record.dot3StatsInternalMacRxErrors,
+                    hdr.eth_record.dot3StatsSymbolErrors,
+
+                    hdr.if_record.record_type,
+                    hdr.if_record.record_length,
+                    hdr.if_record.ifIndex,
+                    hdr.if_record.ifType,
+                    hdr.if_record.ifSpeed,
+                    hdr.if_record.ifDirection,
+                    hdr.if_record.ifStatus,
+                    hdr.if_record.ifInOctets,
+                    hdr.if_record.ifInUcastPkts,
+                    hdr.if_record.ifInMulticastPkts,
+                    hdr.if_record.ifInBroadcastPkts,
+                    hdr.if_record.ifInDiscards,
+                    hdr.if_record.ifInErrors,
+                    hdr.if_record.ifOutOctets,
+                    hdr.if_record.ifOutUcastPkts,
+                    hdr.if_record.ifOutMulticastPkts,
+                    hdr.if_record.ifOutBroadcastPkts, 
+                    hdr.if_record.ifOutDiscards,
+                    hdr.if_record.ifOutErrors,
+                    hdr.if_record.ifPromiscuousMode 
+                });
+            }
+        }
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
             mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
         }
@@ -381,8 +528,11 @@ control MyIngressDeparser(packet_out pkt,
         pkt.emit(hdr.tcp);
         pkt.emit(hdr.udp);
         pkt.emit(hdr.sflow_hd);
-        pkt.emit(hdr.sflow_sample);
+        pkt.emit(hdr.sflow_flow);
         pkt.emit(hdr.raw_record);
+        pkt.emit(hdr.sflow_counter);
+        pkt.emit(hdr.eth_record);
+        pkt.emit(hdr.if_record);
         // if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
         //     mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
         // }

@@ -178,6 +178,7 @@ struct my_metadata_t {
     bit<32>  sampling_rate;
     bit<32>  pkt_count;
     bit<32> sampled_count;
+    bit<32> sample_type;
     bit<1024> raw_128_data;
     bit<1>  recirc;
 }
@@ -194,7 +195,7 @@ header sflow_t {  //28byte
     bit<32> samples;
 }
 
-header sflow_sample_t { //40byte
+header sflow_flow_t { //40byte
     bit<32> sample_type;
     bit<32> sample_length;
     bit<32> sample_seq_num;
@@ -206,6 +207,56 @@ header sflow_sample_t { //40byte
     bit<32> output_if;
     bit<32> record_count;
 }
+header sflow_counter_t { //40byte
+    bit<32> sample_type;
+    bit<32> sample_length;
+    bit<32> sample_seq_num;
+    bit<32> source_id;
+    bit<32> record_count;    
+}
+
+header sflow_eth_record { //152byte
+    bit<32> record_type;
+    bit<32> record_length;
+    bit<32> dot3StatsAlignmentErrors;
+    bit<32> dot3StatsFCSErrors;
+    bit<32> dot3StatsSingleCollisionFrames;
+    bit<32> dot3StatsMultipleCollisionFrames;
+    bit<32> dot3StatsSQETestErrors;
+    bit<32> dot3StatsDeferredTransmissions;
+    bit<32> dot3StatsLateCollisions;
+    bit<32> dot3StatsExcessiveCollisions;
+    bit<32> dot3StatsInternalMacTxErrors;
+    bit<32> dot3StatsCarrierSenseErrors;
+    bit<32> dot3StatsFrameTooLongs;
+    bit<32> dot3StatsInternalMacRxErrors;
+    bit<32> dot3StatsSymbolErrors;
+}
+
+header sflow_if_record { //152byte
+    bit<32> record_type;
+    bit<32> record_length;
+    bit<32> ifIndex;
+    bit<32> ifType;
+    bit<32> ifSpeed;
+    bit<32> ifDirection;
+    bit<32> ifStatus;
+    bit<32> ifInOctets;
+    bit<32> ifInUcastPkts;
+    bit<32> ifInMulticastPkts;
+    bit<32> ifInBroadcastPkts;
+    bit<32> ifInDiscards;
+    bit<32> ifInErrors;
+    bit<32> ifInUnknownProtos;
+    bit<32> ifOutOctets;
+    bit<32> ifOutUcastPkts;
+    bit<32> ifOutMulticastPkts;
+    bit<32> ifOutBroadcastPkts;
+    bit<32> ifOutDiscards;
+    bit<32> ifOutErrors;
+    bit<32> ifPromiscuousMode;
+}
+
 header sflow_raw_record { //152byte
     bit<32> record_type;
     bit<32> record_length;
@@ -237,8 +288,11 @@ struct my_header_t {
     tcp_h           tcp;
     udp_h           udp;
     sflow_t         sflow_hd;
-    sflow_sample_t  sflow_sample;
+    sflow_flow_t    sflow_flow;
     sflow_raw_record raw_record;
+    sflow_counter_t sflow_counter;
+    sflow_eth_record eth_record;
+    sflow_if_record  if_record;
     raw_128_t       raw_128;
     sample_t        sample;
     
