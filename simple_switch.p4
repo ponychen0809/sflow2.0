@@ -141,8 +141,8 @@ control MyIngress(
     Register<bit<32>, bit<9>>(512, 0) port_rx_octets;
     RegisterAction<bit<64>, bit<9>, bit<64>>(port_rx_octets)
     add_octets = {
-        void apply(inout bit<64> v, out bit<64> new_val, bit<64> addend) {
-            v = v + addend;
+        void apply(inout bit<64> v, out bit<64> new_val) {
+            v = v + meta.pkt_bytes;
             new_val = v;
         }
     };
