@@ -129,14 +129,14 @@ control MyIngress(
                 read_val = v; 
             }
     };
-    Register<bit<32>, bit<9>>(512, 0) port_rx_count;
-    RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_count) 
-        inc_port_rx = {
-            void apply(inout bit<32> v, out bit<32> read_val) {
-                v       = v + 1;
-                read_val = v; 
-            }
-    };
+    // Register<bit<32>, bit<9>>(512, 0) port_rx_count;
+    // RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_count) 
+    //     inc_port_rx = {
+    //         void apply(inout bit<32> v, out bit<32> read_val) {
+    //             v       = v + 1;
+    //             read_val = v; 
+    //         }
+    // };
 
     action send_multicast(bit<16> grp_id, bit<16> rid) {
         ig_tm_md.mcast_grp_a = grp_id;
@@ -157,11 +157,11 @@ control MyIngress(
         hdr.sample.sampled_count = sampled_count;
     }
 
-    action set_pkt_count(bit<9> idx) {
-        bit<32> pkt_count;
-        pkt_count = inc_port_rx.execute(idx);
-        hdr.sample.pkt_count = pkt_count;
-    }
+    // action set_pkt_count(bit<9> idx) {
+    //     bit<32> pkt_count;
+    //     pkt_count = inc_port_rx.execute(idx);
+    //     hdr.sample.pkt_count = pkt_count;
+    // }
 
     action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
         hdr.ethernet.src_addr = 0x001122334455;
