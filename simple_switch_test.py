@@ -34,6 +34,9 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.pre_node_tbl = self.bfrt_info.table_get("$pre.node")
         self.pre_mgid_tbl = self.bfrt_info.table_get("$pre.mgid")
 
+        # 4.5) Mirror cfg table —— 你要新增的 mirror session rule 會寫這張表
+        self.mirror_cfg_tbl = self.bfrt_info.table_get("$mirror.cfg")
+
         # 5) timestamp table（P4 裡要有 MyIngress.t_set_ts + action set_ts(ts)）
         #    table t_set_ts { key = { } actions = { set_ts; } size = 1; }
         self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
@@ -147,6 +150,42 @@ class SimpleSwitchTest(BfRuntimeTest):
             [pa1_data, pa2_data]
         )
         print("set_port_agent 規則已寫入")
+
+        # =========================================================
+        # (3.5) Mirror session: $mirror.cfg (照你其他 rule 的 entry_add 寫法)
+        # 你要新增的 rule:
+        # mirror.cfg.add_with_normal(
+        #     sid=26,
+        #     direction="INGRESS",
+        #     session_enable=True,
+        #     ucast_egress_port=32,
+        #     ucast_egress_port_valid=True,
+        #     max_pkt_len=0
+        # )
+        # =========================================================
+        sid = 26
+
+        mirror_key = self.mirror_cfg_tbl.make_key([
+            gc.KeyTuple("$sid", sid)
+        ])
+
+        mirror_data = self.mirror_cfg_tbl.make_data(
+            [
+                gc.DataTuple("$direction", "INGRESS"),
+                gc.DataTuple("$session_enable", True),
+                gc.DataTuple("$ucast_egress_port", 32),
+                gc.DataTuple("$ucast_egress_port_valid", True),
+                gc.DataTuple("$max_pkt_len", 0),
+            ],
+            "normal"
+        )
+
+        self.mirror_cfg_tbl.entry_add(
+            self.dev_tgt,
+            [mirror_key],
+            [mirror_data]
+        )
+        print("$mirror.cfg mirror session 已寫入 (sid={})".format(sid))
 
         # =========================================================
         # (4) PRE multicast: $pre.node / $pre.mgid
