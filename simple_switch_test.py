@@ -146,7 +146,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         for p in ports:
             b = self.read_port_in_bytes(p)
 
-            # ★ 新增：每次讀到 counter 就印 index 與值
+            # ★ 每次讀到 counter 就印 index 與值
             print("[counter] index={} bytes={}".format(p, b))
 
             key = self.if_stats_tbl.make_key([
@@ -157,18 +157,32 @@ class SimpleSwitchTest(BfRuntimeTest):
                 "MyIngress.set_if_stats"
             )
 
+            wrote_ok = False
+
+            # 先試著 mod
             try:
                 self.if_stats_tbl.entry_mod(self.dev_tgt, [key], [data])
-                continue
+                wrote_ok = True
             except Exception as e_mod:
                 print("[if_stats] entry_mod Error: {}".format(e_mod))
-                pass
 
+            # mod 不行才 add
+            if not wrote_ok:
+                try:
+                    self.if_stats_tbl.entry_add(self.dev_tgt, [key], [data])
+                    wrote_ok = True
+                except Exception as e_add:
+                    print("[if_stats] entry_add Error: {}".format(e_add))
+
+            # ★ 新增：寫完立刻讀回來（不管成功與否都嘗試讀，方便 debug）
             try:
-                self.if_stats_tbl.entry_add(self.dev_tgt, [key], [data])
-            except Exception as e_add:
-                print("[if_stats] entry_add Error: {}".format(e_add))
-
+                it = self.if_stats_tbl.entry_get(self.dev_tgt, [key], {"from_hw": False})
+                for d, k in it:
+                    # d.to_dict() 會把 action/field 都印出來
+                    print("[if_stats] readback index={} data={}".format(p, d.to_dict()))
+                    break
+            except Exception as e_rb:
+                print("[if_stats] readback Error: {}".format(e_rb))
 
 
     # ----------------------------
