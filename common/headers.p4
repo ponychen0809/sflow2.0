@@ -238,7 +238,7 @@ header sflow_if_record { //152byte
     bit<32> record_length;
     bit<32> ifIndex;
     bit<32> ifType;
-    bit<32> ifSpeed;
+    bit<64> ifSpeed;
     bit<32> ifDirection;
     bit<32> ifStatus;
     bit<32> ifInOctets;
