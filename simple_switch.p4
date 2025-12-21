@@ -206,44 +206,44 @@ control MyIngress(
     }
     action set_counter_sample_eth_record() {
         hdr.eth_record.setValid();
-        hdr.eth_record.record_type = 2;
-        hdr.eth_record.record_length = 52;
-        hdr.eth_record.dot3StatsAlignmentErrors = 0;
-        hdr.eth_record.dot3StatsFCSErrors = 0;
-        hdr.eth_record.dot3StatsSingleCollisionFrames = 0;
-        hdr.eth_record.dot3StatsMultipleCollisionFrames = 0;
-        hdr.eth_record.dot3StatsSQETestErrors = 0;
-        hdr.eth_record.dot3StatsDeferredTransmissions = 0;
-        hdr.eth_record.dot3StatsLateCollisions = 0;
-        hdr.eth_record.dot3StatsExcessiveCollisions = 0;
-        hdr.eth_record.dot3StatsInternalMacTxErrors = 0;
-        hdr.eth_record.dot3StatsCarrierSenseErrors = 0;
-        hdr.eth_record.dot3StatsFrameTooLongs = 0;
-        hdr.eth_record.dot3StatsInternalMacRxErrors = 0;
-        hdr.eth_record.dot3StatsSymbolErrors = 0;
+        hdr.eth_record.record_type = (bit<32>)2;
+        hdr.eth_record.record_length = (bit<32>)52;
+        hdr.eth_record.dot3StatsAlignmentErrors = (bit<32>)0;
+        hdr.eth_record.dot3StatsFCSErrors = (bit<32>)0;
+        hdr.eth_record.dot3StatsSingleCollisionFrames = (bit<32>)0;
+        hdr.eth_record.dot3StatsMultipleCollisionFrames = (bit<32>)0;
+        hdr.eth_record.dot3StatsSQETestErrors = (bit<32>)0;
+        hdr.eth_record.dot3StatsDeferredTransmissions = (bit<32>)0;
+        hdr.eth_record.dot3StatsLateCollisions = (bit<32>)0;
+        hdr.eth_record.dot3StatsExcessiveCollisions = (bit<32>)0;
+        hdr.eth_record.dot3StatsInternalMacTxErrors = (bit<32>)0;
+        hdr.eth_record.dot3StatsCarrierSenseErrors = (bit<32>)0;
+        hdr.eth_record.dot3StatsFrameTooLongs = (bit<32>)0;
+        hdr.eth_record.dot3StatsInternalMacRxErrors = (bit<32>)0;
+        hdr.eth_record.dot3StatsSymbolErrors = (bit<32>)0;
     }
     action set_counter_sample_if_record() {
         hdr.if_record.setValid();
-        hdr.if_record.record_type = 1;
-        hdr.if_record.record_length = 88;
-        hdr.if_record.ifIndex = 1;
-        hdr.if_record.ifType = 6;
-        hdr.if_record.ifSpeed = 1000000000;
-        hdr.if_record.ifDirection = 1;
-        hdr.if_record.ifStatus = 1;
-        hdr.if_record.ifInOctets = 100;
-        hdr.if_record.ifInUcastPkts = 200;
-        hdr.if_record.ifInMulticastPkts = 300;
-        hdr.if_record.ifInBroadcastPkts = 400;
-        hdr.if_record.ifInDiscards = 0;
-        hdr.if_record.ifInErrors = 0;
-        hdr.if_record.ifOutOctets = 500;
-        hdr.if_record.ifOutUcastPkts = 600;
-        hdr.if_record.ifOutMulticastPkts = 700;
-        hdr.if_record.ifOutBroadcastPkts = 800;
-        hdr.if_record.ifOutDiscards = 0;
-        hdr.if_record.ifOutErrors = 0;
-        hdr.if_record.ifPromiscuousMode = 1;
+        hdr.if_record.record_type = (bit<32>)1;
+        hdr.if_record.record_length = (bit<32>)88;
+        hdr.if_record.ifIndex = (bit<32>)1;
+        hdr.if_record.ifType = (bit<32>)6;
+        hdr.if_record.ifSpeed = (bit<32>)1000000000;
+        hdr.if_record.ifDirection = (bit<32>)1;
+        hdr.if_record.ifStatus = (bit<32>)1;
+        hdr.if_record.ifInOctets = (bit<32>)100;
+        hdr.if_record.ifInUcastPkts = (bit<32>)200;
+        hdr.if_record.ifInMulticastPkts = (bit<32>)300;
+        hdr.if_record.ifInBroadcastPkts = (bit<32>)400;
+        hdr.if_record.ifInDiscards = (bit<32>)0;
+        hdr.if_record.ifInErrors = (bit<32>)0;
+        hdr.if_record.ifOutOctets = (bit<32>)500;
+        hdr.if_record.ifOutUcastPkts = (bit<32>)600;
+        hdr.if_record.ifOutMulticastPkts = (bit<32>)700;
+        hdr.if_record.ifOutBroadcastPkts = (bit<32>)800;
+        hdr.if_record.ifOutDiscards = (bit<32>)0;
+        hdr.if_record.ifOutErrors = (bit<32>)0;
+        hdr.if_record.ifPromiscuousMode = (bit<32>)1;
     }
 
     action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
@@ -366,15 +366,8 @@ control MyIngress(
                 set_counter_sample_hdr();
                 set_counter_sample_eth_record();
                 set_counter_sample_if_record();
-                // hdr.sflow_flow.setInvalid();
-                // hdr.raw_record.setInvalid();
                 ig_tm_md.ucast_egress_port = 142;
                 meta.sample_type = 2;
-
-                
-
-                
-
             }
             bit<32> pkt_count;
             if(idx==140 || idx == 143){
