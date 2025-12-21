@@ -166,7 +166,7 @@ control MyIngress(
         
         hdr.ethernet.setValid();
         hdr.ipv4.setValid();
-        hdr.tcp.setValid();
+        // hdr.tcp.setValid();
         hdr.udp.setValid();
         hdr.sflow_hd.setValid();
         hdr.sflow_counter.setValid();
