@@ -287,15 +287,16 @@ control MyIngress(
                 ig_tm_md.ucast_egress_port = 142;
             }
             bit<32> pkt_count;
-            
+            bit<32> sampled_count;
             if(idx==140 || idx == 143){
                 pkt_count = inc_pkt.execute(idx);
+                sampled_count = inc_sampled_pkt.execute(idx);
                 if(pkt_count==0){   //送往recirc port
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
                     hdr.sample.pkt_count = pkt_count;
-                    hdr.sample.sampled_count = (bit<32>)inc_sampled_pkt.execute(idx);
+                    hdr.sample.sampled_count = sampled_count;
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
