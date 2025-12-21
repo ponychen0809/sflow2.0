@@ -170,9 +170,9 @@ control MyIngress(
         hdr.tcp.setValid();
         hdr.udp.setValid();
         hdr.sflow_hd.setValid();
-        // hdr.sflow_counter.setValid();
-        // hdr.eth_record.setValid();
-        // hdr.if_record.setValid();
+        hdr.sflow_counter.setValid();
+        hdr.eth_record.setValid();
+        hdr.if_record.setValid();
     }
 
     action set_sample_hd(bit<32> agent_addr,bit<32> agent_id) {
