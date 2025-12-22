@@ -19,6 +19,7 @@ enum bit<3> MIRROR_TYPE_t {
 
 const bit<32> SAMPLING_RATE = 128;
 const bit<9> RECIRC_PORT = 36;
+const bit<9> CPU_PORT = 320;
 parser MyIngressParser(packet_in pkt,
                 out my_header_t hdr,
                 out my_metadata_t meta,
@@ -28,11 +29,16 @@ parser MyIngressParser(packet_in pkt,
     state start {
         tofino_parser.apply(pkt, ig_intr_md);
         transition select(ig_intr_md.ingress_port) {
-            RECIRC_PORT: parse_sample;   // 從 recirc port 進來
-            default   : parse_ethernet;      // 一般 front-panel port
+            RECIRC_PORT :  parse_sample;   // 從 recirc port 進來
+            CPU_PORT    :  parse_cpu_packet;
+            default     :  parse_ethernet;      // 一般 front-panel port
         }
     }
-
+    state parse_cpu_packet {
+        pkt.extract(hdr.bridge);
+        meta.cpu_ingress_port = hdr.bridge.ingress_port;
+        transition parse_ethernet;  
+    }
     state parse_sample {
         // pkt.extract(hdr.sample);
         pkt.extract(hdr.sample);
@@ -329,7 +335,7 @@ control MyIngress(
     }
     table if_stats_tbl {
         key = {
-            ig_intr_md.ingress_port : exact;
+            hdr.bridge.ingress_port : exact;
         }
         actions = {
             set_if_stats;

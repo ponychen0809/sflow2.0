@@ -179,6 +179,7 @@ struct my_metadata_t {
     bit<32>  pkt_count;
     bit<32> sampled_count;
     bit<32> sample_type;
+    bit<32> cpu_ingress_port;
     bit<64> ifInOctets;
     bit<1024> raw_128_data;
     bit<1>  recirc;
@@ -278,7 +279,6 @@ header sample_t {
     bit<32>  sampled_count;
 }
 header bridge_h {
-    bit<32> sampling_rate;
     bit<32> ingress_port;
 }
 struct my_header_t {

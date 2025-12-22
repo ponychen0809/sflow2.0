@@ -4,7 +4,7 @@ import sys
 import json
 import time
 import threading
-
+import struct
 import bfrt_grpc.client as gc
 from bfruntime_client_base_tests import BfRuntimeTest
 
@@ -150,7 +150,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("[counter] index={} bytes={}".format(p, b))
 
             key = self.if_stats_tbl.make_key([
-                gc.KeyTuple("ig_intr_md.ingress_port", int(p))
+                gc.KeyTuple("hdr.bridge.ingress_port", int(p))
             ])
             data = self.if_stats_tbl.make_data(
                 [gc.DataTuple("ifInOctets", int(b))],
@@ -158,7 +158,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             )
 
             wrote_ok = False
-
+            
             # 先試著 mod
             try:
                 self.if_stats_tbl.entry_mod(self.dev_tgt, [key], [data])
@@ -426,7 +426,12 @@ class SimpleSwitchTest(BfRuntimeTest):
                 print("[if_stats] read/update Error: {}".format(e))
 
             print("{}, send_packet() to port 320".format(count))
-            send_packet(self, 320, pkt)
+            tag32 = 140  # 或你想塞的值
+
+            prefix = struct.pack("!I", tag32)  # network order 4 bytes
+            raw_pkt = prefix + str(pkt)        # Python2: str(pkt) 是 raw bytes
+
+            send_packet(self, 320, raw_pkt)
             time.sleep(1)
 
     def update_ts_every_second(self):
