@@ -112,10 +112,15 @@ control MyIngress(
                   inout ingress_intrinsic_metadata_for_deparser_t ig_dprsr_md,
                   inout ingress_intrinsic_metadata_for_tm_t ig_tm_md) {
 
-    Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_in_bytes; 
-    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_pkts; 
-    Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_out_bytes; 
-    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_out_pkts; 
+    Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_in_bytes;
+    Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_out_bytes;
+
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_ucast_pkts; 
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_out_ucast_pkts;
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_multi_pkts; 
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_out_multi_pkts;
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_broad_pkts; 
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_out_broad_pkts; 
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_pkts) 
         inc_pkt = {
