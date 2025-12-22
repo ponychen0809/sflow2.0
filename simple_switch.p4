@@ -112,6 +112,8 @@ control MyIngress(
 
     Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_in_bytes; 
     Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_pkts; 
+    Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_out_bytes; 
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_out_pkts; 
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_pkts) 
         inc_pkt = {
@@ -343,11 +345,14 @@ control MyIngress(
             
         }        
         else{
-            port_in_bytes.count(idx);
-            port_in_pkts.count(idx);
+            
             hdr.sample.setValid();
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
+            port_in_bytes.count(idx);
+            port_in_pkts.count(idx);
+            port_out_pkts.count(ig_tm_md.ucast_egress_port);
+            port_out_bytes.count(ig_tm_md.ucast_egress_port);
             if(ig_intr_md.ingress_port == 320){
                 
                 set_counter_sample_hdr();
