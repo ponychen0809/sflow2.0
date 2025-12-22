@@ -180,6 +180,7 @@ struct my_metadata_t {
     bit<32> sampled_count;
     bit<32> sample_type;
     bit<32> cpu_ingress_port;
+    bit<32> ucast_count;
     bit<64> ifInOctets;
     bit<1024> raw_128_data;
     bit<1>  recirc;
