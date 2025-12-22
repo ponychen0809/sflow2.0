@@ -446,7 +446,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         # 你要查的 counter index array
         # 你可以在 config.json 放:
         # "counter_indexes": [140,141,142]
-        index_list = self.cfg.get("counter_indexes", [140,141])
+        index_list = self.cfg.get("counter_indexes", [140,141,142])
 
         while True:
             count += 1
