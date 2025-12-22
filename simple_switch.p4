@@ -366,7 +366,7 @@ control MyIngress(
                 
                 if_stats_tbl.apply();
                 hdr.if_record.setValid();
-                meta.ucast_count = read_pkt.execute((bit<9>hdr.cpu_ingress_port));
+                meta.ucast_count = read_pkt.execute((bit<9>)hdr.cpu_ingress_port);
                 hdr.if_record.record_type = (bit<32>)1;
                 hdr.if_record.record_length = (bit<32>)88;
                 hdr.if_record.ifIndex = (bit<32>)1;
