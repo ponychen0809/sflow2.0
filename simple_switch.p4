@@ -216,7 +216,7 @@ control MyIngress(
         hdr.sflow_counter.sample_type = 2;
         hdr.sflow_counter.sample_length = 168;
         hdr.sflow_counter.sample_seq_num = 1;
-        hdr.sflow_counter.source_id = 140;
+        hdr.sflow_counter.source_id = meta.cpu_ingress_port;
         hdr.sflow_counter.record_count = 2;
     }
 
