@@ -469,7 +469,7 @@ class SimpleSwitchTest(BfRuntimeTest):
                     prefix = struct.pack("!I", int(idx)) + struct.pack("!I", int(pkts)) + struct.pack("!I", int(byt))
 
                     # Python2: str(pkt) 是 raw bytes；不要用 bytes(pkt)
-                    raw_pkt = prefix + str(pkt)
+                    raw_pkt = prefix + bytes(pkt)
 
                     print("{}, send_packet() to port 320 (idx={})".format(count, idx))
                     send_packet(self, 320, raw_pkt)
