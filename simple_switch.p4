@@ -343,6 +343,8 @@ control MyIngress(
             
         }        
         else{
+            port_in_bytes.count(idx);
+            port_in_pkts.count(idx);
             hdr.sample.setValid();
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
@@ -396,8 +398,7 @@ control MyIngress(
             if(idx==140 || idx == 143){
                 meta.sample_type = 0;
                 pkt_count = inc_pkt.execute(idx);
-                port_in_bytes.count(idx);
-                port_in_pkts.count(idx);
+                
                 set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
                     set_sampled_count(idx);
