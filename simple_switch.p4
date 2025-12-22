@@ -240,7 +240,7 @@ control MyIngress(
         bit<9> idx;
         idx = (bit<9>)hdr.bridge.ingress_port;
         bit<32> ucast_count;
-        ucast_count = read_pkt(idx);
+        ucast_count = read_pkt.execute(idx);
         hdr.if_record.setValid();
         hdr.if_record.record_type = (bit<32>)1;
         hdr.if_record.record_length = (bit<32>)88;
