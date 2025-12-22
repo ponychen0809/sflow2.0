@@ -396,7 +396,7 @@ control MyIngress(
                 if_stats_tbl.apply();
                 bit<9> tmp_idx;
                 tmp_idx = (bit<9>)hdr.bridge.ingress_port;
-                // meta.ucast_count = read_pkt.execute(tmp_idx);
+                read_pkt.execute(tmp_idx);
                 set_counter_sample_if_record();
                 ig_tm_md.ucast_egress_port = 142;
                 meta.sample_type = 2;
