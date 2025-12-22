@@ -358,11 +358,20 @@ control MyIngress(
             bit<8> dmac0 = (bit<8>)(dmac >> 40);
             if (dmac_hi == 32w0xFFFFFFFF) {
                 if (dmac_lo == 16w0xFFFF) {
-                    // broadcast
-                } else if (ig_mcast) {
-                    // multicast
+                    port_in_bytes.count(idx);
+                port_in_pkts.count(idx);
+                port_out_pkts.count(ig_tm_md.ucast_egress_port);
+                port_out_bytes.count(ig_tm_md.ucast_egress_port);
+                } else if ((dmac0 & 8w1) == 8w1) {
+                    port_in_bytes.count(idx);
+                port_in_pkts.count(idx);
+                port_out_pkts.count(ig_tm_md.ucast_egress_port);
+                port_out_bytes.count(ig_tm_md.ucast_egress_port);
                 } else {
-                    // unicast
+                    port_in_bytes.count(idx);
+                port_in_pkts.count(idx);
+                port_out_pkts.count(ig_tm_md.ucast_egress_port);
+                port_out_bytes.count(ig_tm_md.ucast_egress_port);
                 }
             }else if ((dmac0 & 8w1) == 8w1 ) {
                 port_in_bytes.count(idx);
