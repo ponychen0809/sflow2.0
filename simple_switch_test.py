@@ -5,6 +5,7 @@ import json
 import time
 import threading
 import struct
+import socket
 import bfrt_grpc.client as gc
 from bfruntime_client_base_tests import BfRuntimeTest
 
@@ -433,12 +434,7 @@ class SimpleSwitchTest(BfRuntimeTest):
     # threads
     # ----------------------------
     def send_pkt_every_second(self):
-        pkt = (
-            Ether(dst="ff:ff:ff:ff:ff:ff", src="00:11:22:33:44:55") /
-            IP(src="10.0.0.1", dst="10.0.0.2") /
-            UDP(sport=1234, dport=5678) /
-            "test"   # Python2: 用 str 就好，避免 b""
-        )
+        
 
         count = 0
         input("按 Enter 後開始每秒送封包到 PTF port 320...\n")
@@ -450,7 +446,8 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         while True:
             count += 1
-
+            rules = self.cfg.get("port_agent", [])
+            port_to_addr = {r["ingress_port"]: r["agent_addr"] for r in rules}
             # 先把 if_stats_tbl 也更新（你原本就有）
             try:
                 ports = self.cfg.get("if_stats", {}).get("ports", [140])
@@ -460,6 +457,14 @@ class SimpleSwitchTest(BfRuntimeTest):
 
             # 每秒送出 len(index_list) 個封包
             for idx in index_list:
+                addr = port_to_addr[idx]
+                ip = socket.inet_ntoa(struct.pack("!I", int(addr, 16)))
+                pkt = (
+                    Ether(dst="ff:ff:ff:ff:ff:ff", src="00:11:22:33:44:55") /
+                    IP(src=ip, dst="10.10.3.2") /
+                    UDP(sport=1234, dport=6343) /
+                    "test"   # Python2: 用 str 就好，避免 b""
+                )
                 try:
                     pkts = self.read_port_in_pkts(idx)
                     byt  = self.read_port_in_bytes(idx)
