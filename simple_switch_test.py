@@ -70,7 +70,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
 
         # ---- NEW: counter + if_stats table (do not change other logic) ----
-        self.pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_in_pkts")
+        self.port_in_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_in_pkts")
 
         self.port_in_bytes_tbl = self.bfrt_info.table_get("MyIngress.port_in_bytes")
         self.if_stats_tbl = self.bfrt_info.table_get("MyIngress.if_stats_tbl")
