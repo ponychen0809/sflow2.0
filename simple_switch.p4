@@ -176,7 +176,7 @@ control MyIngress(
     action set_if_stats(bit<64> ifInOctets) {
         meta.ifInOctets = ifInOctets;
         bit<32> pkt_count;
-        pkt_count = read_pkt.execute((bit<9>)hdr.bridge.ingress_port);
+        pkt_count = inc_port_rx.execute((bit<9>)hdr.bridge.ingress_port);
         meta.ucast_count = pkt_count;
     }
     action set_counter_sample_hdr() {
