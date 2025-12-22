@@ -429,7 +429,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             tag32 = 140  # 或你想塞的值
 
             prefix = struct.pack("!I", tag32)  # network order 4 bytes
-            raw_pkt = prefix + raw(pkt)        # Python2: str(pkt) 是 raw bytes
+            raw_pkt = prefix + bytes(pkt)        # Python2: str(pkt) 是 raw bytes
 
             send_packet(self, 320, raw_pkt)
             time.sleep(1)
