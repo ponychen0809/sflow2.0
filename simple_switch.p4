@@ -237,7 +237,6 @@ control MyIngress(
         hdr.udp.dst_port = (bit<16>)6343;
         hdr.udp.hdr_length = (bit<16>)228;
         
-
         hdr.sflow_hd.setValid();
         hdr.sflow_hd.version = (bit<32>)5;
         hdr.sflow_hd.address_type = (bit<32>)1;
@@ -306,6 +305,7 @@ control MyIngress(
         t_set_ts.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         // bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
+        meta.ucast_count = read_pkt.execute(idx);
 
         if(ig_intr_md.ingress_port == 36){
             meta.sample_type = 1;
@@ -366,7 +366,6 @@ control MyIngress(
                 
                 if_stats_tbl.apply();
                 hdr.if_record.setValid();
-                meta.ucast_count = read_pkt.execute((bit<9>)meta.cpu_ingress_port);
                 hdr.if_record.record_type = (bit<32>)1;
                 hdr.if_record.record_length = (bit<32>)88;
                 hdr.if_record.ifIndex = (bit<32>)1;
