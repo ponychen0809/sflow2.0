@@ -356,6 +356,8 @@ control MyIngress(
             hdr.sample.setValid();
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
+            port_in_bytes.count(idx);
+            port_out_bytes.count(ig_tm_md.ucast_egress_port);
             bit<48> dmac = hdr.ethernet.dst_addr;
             bit<32> dmac_hi = (bit<32>)(dmac >> 16);   // 上 32 bits
             bit<16> dmac_lo = (bit<16>)(dmac);         // 下 16 bits
@@ -363,31 +365,26 @@ control MyIngress(
             bit<8> dmac0 = (bit<8>)(dmac >> 40);
             if (dmac_hi == 32w0xFFFFFFFF) {
                 if (dmac_lo == 16w0xFFFF) {
-                    port_in_bytes.count(idx);
-                port_in_pkts.count(idx);
-                port_out_pkts.count(ig_tm_md.ucast_egress_port);
-                port_out_bytes.count(ig_tm_md.ucast_egress_port);
+                    
+                    port_in_broad_pkts.count(idx);
+                    port_out_broad_pkts.count(ig_tm_md.ucast_egress_port);
+                    
                 } else if ((dmac0 & 8w1) == 8w1) {
-                    port_in_bytes.count(idx);
-                port_in_pkts.count(idx);
-                port_out_pkts.count(ig_tm_md.ucast_egress_port);
-                port_out_bytes.count(ig_tm_md.ucast_egress_port);
+                    
+                    port_in_multi_pkts.count(idx);
+                    port_out_multi_pkts.count(ig_tm_md.ucast_egress_port);
+
                 } else {
-                    port_in_bytes.count(idx);
-                port_in_pkts.count(idx);
-                port_out_pkts.count(ig_tm_md.ucast_egress_port);
-                port_out_bytes.count(ig_tm_md.ucast_egress_port);
+                    port_in_ucast_pkts.count(idx);
+                    port_out_ucast_pkts.count(ig_tm_md.ucast_egress_port);
+
                 }
             }else if ((dmac0 & 8w1) == 8w1 ) {
-                port_in_bytes.count(idx);
-                port_in_pkts.count(idx);
-                port_out_pkts.count(ig_tm_md.ucast_egress_port);
-                port_out_bytes.count(ig_tm_md.ucast_egress_port);
+                port_in_multi_pkts.count(idx);
+                port_out_multi_pkts.count(ig_tm_md.ucast_egress_port);
             } else {
-                port_in_bytes.count(idx);
-                port_in_pkts.count(idx);
-                port_out_pkts.count(ig_tm_md.ucast_egress_port);
-                port_out_bytes.count(ig_tm_md.ucast_egress_port);
+                port_in_ucast_pkts.count(idx);
+                port_out_ucast_pkts.count(ig_tm_md.ucast_egress_port);
             }
             
             
