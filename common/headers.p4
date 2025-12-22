@@ -180,8 +180,10 @@ struct my_metadata_t {
     bit<32> sampled_count;
     bit<32> sample_type;
     bit<32> cpu_ingress_port;
-    bit<32> cpu_pkt_count;
-    bit<32> cpu_byte_count;
+    bit<32> cpu_in_pkt_count;
+    bit<32> cpu_in_byte_count;
+    bit<32> cpu_out_pkt_count;
+    bit<32> cpu_out_byte_count;
     bit<32> ucast_count;
     bit<64> ifInOctets;
     bit<1024> raw_128_data;
@@ -283,8 +285,10 @@ header sample_t {
 }
 header bridge_h {
     bit<32> ingress_port;
-    bit<32> pkt_count;
-    bit<32> byte_count;
+    bit<32> in_pkt_count;
+    bit<32> in_byte_count;
+    bit<32> out_pkt_count;
+    bit<32> out_byte_count;
 }
 struct my_header_t {
     mirror_h        mirror;

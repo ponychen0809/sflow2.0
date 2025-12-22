@@ -37,8 +37,10 @@ parser MyIngressParser(packet_in pkt,
     state parse_cpu_packet {
         pkt.extract(hdr.bridge);
         meta.cpu_ingress_port = hdr.bridge.ingress_port;
-        meta.cpu_pkt_count = hdr.bridge.pkt_count;
-        meta.cpu_byte_count = hdr.bridge.byte_count;
+        meta.cpu_in_pkt_count = hdr.bridge.in_pkt_count;
+        meta.cpu_in_byte_count = hdr.bridge.in_byte_count;
+        meta.cpu_out_pkt_count = hdr.bridge.out_pkt_count;
+        meta.cpu_out_byte_count = hdr.bridge.out_byte_count;
         transition parse_ethernet;  
     }
     state parse_sample {
@@ -382,14 +384,14 @@ control MyIngress(
                 hdr.if_record.ifSpeed = (bit<64>)1000000000;
                 hdr.if_record.ifDirection = (bit<32>)1;
                 hdr.if_record.ifStatus = (bit<32>)1;
-                hdr.if_record.ifInOctets = (bit<64>)meta.cpu_byte_count;
-                hdr.if_record.ifInUcastPkts = (bit<32>)meta.cpu_pkt_count;
+                hdr.if_record.ifInOctets = (bit<64>)meta.cpu_in_byte_count;
+                hdr.if_record.ifInUcastPkts = (bit<32>)meta.cpu_in_pkt_count;
                 hdr.if_record.ifInMulticastPkts = (bit<32>)300;
                 hdr.if_record.ifInBroadcastPkts = (bit<32>)400;
                 hdr.if_record.ifInDiscards = (bit<32>)0;
                 hdr.if_record.ifInErrors = (bit<32>)0;
-                hdr.if_record.ifOutOctets = (bit<64>)500;
-                hdr.if_record.ifOutUcastPkts = (bit<32>)600;
+                hdr.if_record.ifOutOctets = (bit<64>)meta.cpu_out_byte_count;
+                hdr.if_record.ifOutUcastPkts = (bit<32>)meta.cpu_out_pkt_count;
                 hdr.if_record.ifOutMulticastPkts = (bit<32>)700;
                 hdr.if_record.ifOutBroadcastPkts = (bit<32>)800;
                 hdr.if_record.ifOutDiscards = (bit<32>)0;
