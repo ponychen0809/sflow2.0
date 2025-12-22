@@ -351,13 +351,16 @@ control MyIngress(
             hdr.sample.setValid();
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
+            bit<48> dmac = hdr.ethernet.dst_addr;
 
+            // 先取出 dst MAC 的第一個 byte（最左邊那個 byte）
+            bit<8> dmac0 = (bit<8>)(dmac >> 40);
             if (hdr.ethernet.dst_addr == 0xFFFFFFFFFFFF) {
                 port_in_bytes.count(idx);
                 port_in_pkts.count(idx);
                 port_out_pkts.count(ig_tm_md.ucast_egress_port);
                 port_out_bytes.count(ig_tm_md.ucast_egress_port);
-            } else if (hdr.ethernet.dst_addr[40] == 1) {
+            } else if ((dmac0 & 8w1) == 8w1 ) {
                 port_in_bytes.count(idx);
                 port_in_pkts.count(idx);
                 port_out_pkts.count(ig_tm_md.ucast_egress_port);
