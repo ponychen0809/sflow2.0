@@ -37,10 +37,14 @@ parser MyIngressParser(packet_in pkt,
     state parse_cpu_packet {
         pkt.extract(hdr.bridge);
         meta.cpu_ingress_port = hdr.bridge.ingress_port;
-        meta.cpu_in_pkt_count = hdr.bridge.in_pkt_count;
-        meta.cpu_in_byte_count = hdr.bridge.in_byte_count;
-        meta.cpu_out_pkt_count = hdr.bridge.out_pkt_count;
-        meta.cpu_out_byte_count = hdr.bridge.out_byte_count;
+        meta.in_byte_count = hdr.bridge.in_byte_count;
+        meta.out_byte_count = hdr.bridge.out_byte_count;
+        meta.in_ucast_count = hdr.bridge.in_ucast_count;
+        meta.in_multi_count = hdr.bridge.in_multi_count;
+        meta.in_broad_count = hdr.bridge.in_broad_count;
+        meta.out_ucast_count = hdr.bridge.out_ucast_count;
+        meta.out_multi_count = hdr.bridge.out_multi_count;
+        meta.out_broad_count = hdr.bridge.out_broad_count;
         transition parse_ethernet;  
     }
     state parse_sample {
@@ -115,12 +119,13 @@ control MyIngress(
     Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_in_bytes;
     Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_out_bytes;
 
-    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_ucast_pkts; 
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_ucast_pkts;
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_multi_pkts;
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_broad_pkts;  
     Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_out_ucast_pkts;
-    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_multi_pkts; 
     Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_out_multi_pkts;
-    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_broad_pkts; 
-    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_out_broad_pkts; 
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_out_broad_pkts;
+
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_pkts) 
         inc_pkt = {
@@ -365,19 +370,14 @@ control MyIngress(
             bit<8> dmac0 = (bit<8>)(dmac >> 40);
             if (dmac_hi == 32w0xFFFFFFFF) {
                 if (dmac_lo == 16w0xFFFF) {
-                    
                     port_in_broad_pkts.count(idx);
                     port_out_broad_pkts.count(ig_tm_md.ucast_egress_port);
-                    
                 } else if ((dmac0 & 8w1) == 8w1) {
-                    
                     port_in_multi_pkts.count(idx);
                     port_out_multi_pkts.count(ig_tm_md.ucast_egress_port);
-
                 } else {
                     port_in_ucast_pkts.count(idx);
                     port_out_ucast_pkts.count(ig_tm_md.ucast_egress_port);
-
                 }
             }else if ((dmac0 & 8w1) == 8w1 ) {
                 port_in_multi_pkts.count(idx);
@@ -417,16 +417,16 @@ control MyIngress(
                 hdr.if_record.ifSpeed = (bit<64>)1000000000;
                 hdr.if_record.ifDirection = (bit<32>)1;
                 hdr.if_record.ifStatus = (bit<32>)1;
-                hdr.if_record.ifInOctets = (bit<64>)meta.cpu_in_byte_count;
-                hdr.if_record.ifInUcastPkts = (bit<32>)meta.cpu_in_pkt_count;
-                hdr.if_record.ifInMulticastPkts = (bit<32>)300;
-                hdr.if_record.ifInBroadcastPkts = (bit<32>)400;
+                hdr.if_record.ifInOctets = (bit<64>)meta.in_byte_count;
+                hdr.if_record.ifInUcastPkts = (bit<32>)meta.in_ucast_count;
+                hdr.if_record.ifInMulticastPkts = (bit<32>)meta.in_multi_count;
+                hdr.if_record.ifInBroadcastPkts = (bit<32>)meta.in_broad_count;
                 hdr.if_record.ifInDiscards = (bit<32>)0;
                 hdr.if_record.ifInErrors = (bit<32>)0;
-                hdr.if_record.ifOutOctets = (bit<64>)meta.cpu_out_byte_count;
-                hdr.if_record.ifOutUcastPkts = (bit<32>)meta.cpu_out_pkt_count;
-                hdr.if_record.ifOutMulticastPkts = (bit<32>)700;
-                hdr.if_record.ifOutBroadcastPkts = (bit<32>)800;
+                hdr.if_record.ifOutOctets = (bit<64>)meta.out_byte_count;
+                hdr.if_record.ifOutUcastPkts = (bit<32>)meta.out_ucast_count;
+                hdr.if_record.ifOutMulticastPkts = (bit<32>)meta.out_multi_count;
+                hdr.if_record.ifOutBroadcastPkts = (bit<32>)meta.out_broad_count;;
                 hdr.if_record.ifOutDiscards = (bit<32>)0;
                 hdr.if_record.ifOutErrors = (bit<32>)0;
                 hdr.if_record.ifPromiscuousMode = (bit<32>)1;

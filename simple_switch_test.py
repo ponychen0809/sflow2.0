@@ -71,10 +71,16 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
 
         # ---- NEW: counter + if_stats table (do not change other logic) ----
-        self.port_in_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_in_pkts")
+        self.port_in_ucast_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_in_ucast_pkts")
+        self.port_in_multi_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_in_multi_pkts")
+        self.port_in_broad_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_in_broad_pkts")
+        self.port_out_ucast_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_out_ucast_pkts")
+        self.port_out_multi_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_out_multi_pkts")
+        self.port_out_broad_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_out_broad_pkts")
         self.port_in_bytes_tbl = self.bfrt_info.table_get("MyIngress.port_in_bytes")
-        self.port_out_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_out_pkts")
         self.port_out_bytes_tbl = self.bfrt_info.table_get("MyIngress.port_out_bytes")
+        
+        
         self.if_stats_tbl = self.bfrt_info.table_get("MyIngress.if_stats_tbl")
 
         self.start_time = None
@@ -82,7 +88,6 @@ class SimpleSwitchTest(BfRuntimeTest):
 
     def runTest(self):
         self.start_time = time.time()
-
         self.apply_ports_from_cfg()
         self.apply_forwarding_from_cfg()
         self.apply_sampling_from_cfg()
@@ -106,20 +111,170 @@ class SimpleSwitchTest(BfRuntimeTest):
             time.sleep(1)
 
 
-
-    # ----------------------------
-    # NEW: read pkts counter like CLI
-    #   bfrt...MyIngress.port_in_pkts get(COUNTER_INDEX=140)
-    #   key  : $COUNTER_INDEX
-    #   data : $COUNTER_SPEC_PKTS
-    # ----------------------------
-    def read_port_in_pkts(self, counter_index):
-        k = self.port_in_pkts_tbl.make_key([
+    def read_port_in_ucast_pkts(self, counter_index):
+        k = self.port_in_ucast_pkts_tbl.make_key([
             gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
         ])
 
         try:
-            it = self.port_in_pkts_tbl.entry_get(self.dev_tgt, [k], {"from_hw": True})
+            it = self.port_in_ucast_pkts_tbl.entry_get(self.dev_tgt, [k], {"from_hw": True})
+            for data, key in it:
+                d = data.to_dict()
+
+                val = d.get("$COUNTER_SPEC_PKTS", 0)
+
+                # Some BFRT versions may return nested dict for counter spec
+                if isinstance(val, dict):
+                    # try common keys
+                    if "packets" in val:
+                        return int(val.get("packets", 0))
+                    if "pkts" in val:
+                        return int(val.get("pkts", 0))
+                    if "$COUNTER_SPEC_PKTS" in val:
+                        return int(val.get("$COUNTER_SPEC_PKTS", 0))
+                    # fallback: first numeric value
+                    for _, vv in val.items():
+                        if isinstance(vv, (int, long)):
+                            return int(vv)
+
+                return int(val)
+            return 0
+        except Exception as e:
+            print("[counter] entry_get Error: {}".format(e))
+            return 0
+    def read_port_in_multi_pkts(self, counter_index):
+        k = self.port_in_multi_pkts_tbl.make_key([
+            gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
+        ])
+
+        try:
+            it = self.port_in_multi_pkts_tbl.entry_get(self.dev_tgt, [k], {"from_hw": True})
+            for data, key in it:
+                d = data.to_dict()
+
+                val = d.get("$COUNTER_SPEC_PKTS", 0)
+
+                # Some BFRT versions may return nested dict for counter spec
+                if isinstance(val, dict):
+                    # try common keys
+                    if "packets" in val:
+                        return int(val.get("packets", 0))
+                    if "pkts" in val:
+                        return int(val.get("pkts", 0))
+                    if "$COUNTER_SPEC_PKTS" in val:
+                        return int(val.get("$COUNTER_SPEC_PKTS", 0))
+                    # fallback: first numeric value
+                    for _, vv in val.items():
+                        if isinstance(vv, (int, long)):
+                            return int(vv)
+
+                return int(val)
+            return 0
+        except Exception as e:
+            print("[counter] entry_get Error: {}".format(e))
+            return 0
+        
+    def read_port_in_broad_pkts(self, counter_index):
+        k = self.port_in_broad_pkts_tbl.make_key([
+            gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
+        ])
+
+        try:
+            it = self.port_in_broad_pkts_tbl.entry_get(self.dev_tgt, [k], {"from_hw": True})
+            for data, key in it:
+                d = data.to_dict()
+
+                val = d.get("$COUNTER_SPEC_PKTS", 0)
+
+                # Some BFRT versions may return nested dict for counter spec
+                if isinstance(val, dict):
+                    # try common keys
+                    if "packets" in val:
+                        return int(val.get("packets", 0))
+                    if "pkts" in val:
+                        return int(val.get("pkts", 0))
+                    if "$COUNTER_SPEC_PKTS" in val:
+                        return int(val.get("$COUNTER_SPEC_PKTS", 0))
+                    # fallback: first numeric value
+                    for _, vv in val.items():
+                        if isinstance(vv, (int, long)):
+                            return int(vv)
+
+                return int(val)
+            return 0
+        except Exception as e:
+            print("[counter] entry_get Error: {}".format(e))
+            return 0
+    def read_port_out_ucast_pkts(self, counter_index):
+        k = self.port_out_ucast_pkts_tbl.make_key([
+            gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
+        ])
+
+        try:
+            it = self.port_out_ucast_pkts_tbl.entry_get(self.dev_tgt, [k], {"from_hw": True})
+            for data, key in it:
+                d = data.to_dict()
+
+                val = d.get("$COUNTER_SPEC_PKTS", 0)
+
+                # Some BFRT versions may return nested dict for counter spec
+                if isinstance(val, dict):
+                    # try common keys
+                    if "packets" in val:
+                        return int(val.get("packets", 0))
+                    if "pkts" in val:
+                        return int(val.get("pkts", 0))
+                    if "$COUNTER_SPEC_PKTS" in val:
+                        return int(val.get("$COUNTER_SPEC_PKTS", 0))
+                    # fallback: first numeric value
+                    for _, vv in val.items():
+                        if isinstance(vv, (int, long)):
+                            return int(vv)
+
+                return int(val)
+            return 0
+        except Exception as e:
+            print("[counter] entry_get Error: {}".format(e))
+            return 0
+    def read_port_out_multi_pkts(self, counter_index):
+        k = self.port_out_multi_pkts_tbl.make_key([
+            gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
+        ])
+
+        try:
+            it = self.port_out_multi_pkts_tbl.entry_get(self.dev_tgt, [k], {"from_hw": True})
+            for data, key in it:
+                d = data.to_dict()
+
+                val = d.get("$COUNTER_SPEC_PKTS", 0)
+
+                # Some BFRT versions may return nested dict for counter spec
+                if isinstance(val, dict):
+                    # try common keys
+                    if "packets" in val:
+                        return int(val.get("packets", 0))
+                    if "pkts" in val:
+                        return int(val.get("pkts", 0))
+                    if "$COUNTER_SPEC_PKTS" in val:
+                        return int(val.get("$COUNTER_SPEC_PKTS", 0))
+                    # fallback: first numeric value
+                    for _, vv in val.items():
+                        if isinstance(vv, (int, long)):
+                            return int(vv)
+
+                return int(val)
+            return 0
+        except Exception as e:
+            print("[counter] entry_get Error: {}".format(e))
+            return 0
+        
+    def read_port_out_broad_pkts(self, counter_index):
+        k = self.port_out_broad_pkts_tbl.make_key([
+            gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
+        ])
+
+        try:
+            it = self.port_out_broad_pkts_tbl.entry_get(self.dev_tgt, [k], {"from_hw": True})
             for data, key in it:
                 d = data.to_dict()
 
@@ -181,43 +336,6 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("[counter] entry_get Error: {}".format(e))
             return 0
 
-    # ----------------------------
-    # NEW: read pkts counter like CLI
-    #   bfrt...MyIngress.port_in_pkts get(COUNTER_INDEX=140)
-    #   key  : $COUNTER_INDEX
-    #   data : $COUNTER_SPEC_PKTS
-    # ----------------------------
-    def read_port_out_pkts(self, counter_index):
-        k = self.port_out_pkts_tbl.make_key([
-            gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
-        ])
-
-        try:
-            it = self.port_out_pkts_tbl.entry_get(self.dev_tgt, [k], {"from_hw": True})
-            for data, key in it:
-                d = data.to_dict()
-
-                val = d.get("$COUNTER_SPEC_PKTS", 0)
-
-                # Some BFRT versions may return nested dict for counter spec
-                if isinstance(val, dict):
-                    # try common keys
-                    if "packets" in val:
-                        return int(val.get("packets", 0))
-                    if "pkts" in val:
-                        return int(val.get("pkts", 0))
-                    if "$COUNTER_SPEC_PKTS" in val:
-                        return int(val.get("$COUNTER_SPEC_PKTS", 0))
-                    # fallback: first numeric value
-                    for _, vv in val.items():
-                        if isinstance(vv, (int, long)):
-                            return int(vv)
-
-                return int(val)
-            return 0
-        except Exception as e:
-            print("[counter] entry_get Error: {}".format(e))
-            return 0
         
     # ----------------------------
     # NEW: read counter like CLI
@@ -290,8 +408,6 @@ class SimpleSwitchTest(BfRuntimeTest):
                     wrote_ok = True
                 except Exception as e_add:
                     print("[if_stats] entry_add Error: {}".format(e_add))
-
-
 
 
     # ----------------------------
@@ -509,8 +625,6 @@ class SimpleSwitchTest(BfRuntimeTest):
     # threads
     # ----------------------------
     def send_pkt_every_second(self):
-        
-
         count = 0
         input("按 Enter 後開始每秒送封包到 PTF port 320...\n")
 
@@ -544,15 +658,20 @@ class SimpleSwitchTest(BfRuntimeTest):
                     "test"   # Python2: 用 str 就好，避免 b""
                 )
                 try:
-                    in_pkts = self.read_port_in_pkts(idx)
                     in_byte  = self.read_port_in_bytes(idx)
-                    out_pkts = self.read_port_out_pkts(idx)
                     out_byte = self.read_port_out_bytes(idx)
-                    print("[counter] index={} in_pkts={} in_bytes={} out_pkts={} out_bytes={}".format(idx, in_pkts, in_byte,out_pkts,out_byte))
+                    in_ucast = self.read_port_in_ucast_pkts(idx)
+                    in_multi = self.read_port_in_multi_pkts(idx)
+                    in_broad = self.read_port_in_broad_pkts(idx)
+                    out_ucast = self.read_port_out_ucast_pkts(idx)
+                    out_multi = self.read_port_out_multi_pkts(idx)
+                    out_broad = self.read_port_out_broad_pkts(idx)
+                    print("[counter] index={} in_pkts={} in_bytes={} out_pkts={} out_bytes={}".format(idx, in_ucast, in_byte,out_ucast,out_byte))
 
                     # 4B idx + 4B pkts + 4B bytes (network order)
-                    prefix = struct.pack("!I", int(idx)) + struct.pack("!I", int(in_pkts)) + struct.pack("!I", int(in_byte))
-                    prefix = prefix + struct.pack("!I", int(out_pkts)) + struct.pack("!I", int(out_byte))
+                    prefix = struct.pack("!I", int(idx)) + struct.pack("!I", int(in_byte)) + struct.pack("!I", int(out_byte))
+                    prefix = prefix + struct.pack("!I", int(in_ucast)) + struct.pack("!I", int(in_multi)) + struct.pack("!I", int(in_broad))
+                    prefix = prefix + struct.pack("!I", int(out_ucast)) + struct.pack("!I", int(out_multi)) + struct.pack("!I", int(out_broad))
                     # Python2: str(pkt) 是 raw bytes；不要用 bytes(pkt)
                     raw_pkt = prefix + bytes(pkt)
 
