@@ -472,7 +472,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("{}, send_packet() to port 320".format(count))
             tag32 = 140  # 或你想塞的值
 
-            prefix = struct.pack("!I", tag32)  # network order 4 bytes
+            prefix = struct.pack("!I", tag32) +  struct.pack("!I", pkts) +  struct.pack("!I", byt)# network order 4 bytes
             raw_pkt = prefix + bytes(pkt)        # Python2: str(pkt) 是 raw bytes
 
             send_packet(self, 320, raw_pkt)
