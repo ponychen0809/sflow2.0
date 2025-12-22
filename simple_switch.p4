@@ -237,10 +237,8 @@ control MyIngress(
         hdr.eth_record.dot3StatsSymbolErrors = (bit<32>)0;
     }
     action set_counter_sample_if_record() {
-        bit<9> idx;
-        idx = (bit<9>)hdr.bridge.ingress_port;
-        bit<32> ucast_count;
-        ucast_count = read_pkt.execute(idx);
+        
+        
         hdr.if_record.setValid();
         hdr.if_record.record_type = (bit<32>)1;
         hdr.if_record.record_length = (bit<32>)88;
@@ -396,6 +394,9 @@ control MyIngress(
                 set_counter_sample_hdr();
                 set_counter_sample_eth_record();
                 if_stats_tbl.apply();
+                bit<9> tmp_idx;
+                tmp_idx = (bit<9>)hdr.bridge.ingress_port;
+                meta.ucast_count = read_pkt.execute(tmp_idx);
                 set_counter_sample_if_record();
                 ig_tm_md.ucast_egress_port = 142;
                 meta.sample_type = 2;
