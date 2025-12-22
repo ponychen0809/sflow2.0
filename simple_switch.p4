@@ -122,12 +122,7 @@ control MyIngress(
                 new_val = v; 
             }
     };
-    RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_pkts) 
-        read_pkt = {
-            void apply(inout bit<32> v, out bit<32> read_val) {
-                read_val = v; 
-            }
-    };
+    
     Register<bit<32>, bit<9>>(512, 0) port_sampled_pkts;
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_sampled_pkts) 
         inc_sampled_pkt = {
@@ -141,6 +136,12 @@ control MyIngress(
         inc_port_rx = {
             void apply(inout bit<32> v, out bit<32> read_val) {
                 v       = v + 1;
+                read_val = v; 
+            }
+    };
+    RegisterAction<bit<32>, bit<9>, bit<32>>(port_rx_count) 
+        read_pkt = {
+            void apply(inout bit<32> v, out bit<32> read_val) {
                 read_val = v; 
             }
     };
@@ -236,6 +237,10 @@ control MyIngress(
         hdr.eth_record.dot3StatsSymbolErrors = (bit<32>)0;
     }
     action set_counter_sample_if_record() {
+        bit<9> idx;
+        idx = (bit<9>)hdr.bridge.ingress_port;
+        bit<32> ucast_count;
+        ucast_count = read_pkt(idx);
         hdr.if_record.setValid();
         hdr.if_record.record_type = (bit<32>)1;
         hdr.if_record.record_length = (bit<32>)88;
@@ -245,7 +250,7 @@ control MyIngress(
         hdr.if_record.ifDirection = (bit<32>)1;
         hdr.if_record.ifStatus = (bit<32>)1;
         hdr.if_record.ifInOctets = (bit<64>)meta.ifInOctets;
-        hdr.if_record.ifInUcastPkts = (bit<32>)200;
+        hdr.if_record.ifInUcastPkts = (bit<32>)ucast_count;
         hdr.if_record.ifInMulticastPkts = (bit<32>)300;
         hdr.if_record.ifInBroadcastPkts = (bit<32>)400;
         hdr.if_record.ifInDiscards = (bit<32>)0;
