@@ -108,7 +108,8 @@ control MyIngress(
                   inout ingress_intrinsic_metadata_for_deparser_t ig_dprsr_md,
                   inout ingress_intrinsic_metadata_for_tm_t ig_tm_md) {
 
-    Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_in_bytes;  
+    Counter<bit<64>, bit<9>>(512, CounterType_t.BYTES) port_in_bytes; 
+    Counter<bit<64>, bit<9>>(512, CounterType_t.PACKETS) port_in_pkts; 
     Register<bit<32>, bit<9>>(512, 0) port_rx_pkts;
     RegisterAction<bit<32>, bit<9>,bit<32>>(port_rx_pkts) 
         inc_pkt = {
@@ -304,8 +305,7 @@ control MyIngress(
     apply {
         t_set_ts.apply();
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
-        // bit<9> tmp_idx = (bit<9>)meta.sample_ing_port;
-        meta.ucast_count = read_pkt.execute(idx);
+        
 
         if(ig_intr_md.ingress_port == 36){
             meta.sample_type = 1;
@@ -395,6 +395,7 @@ control MyIngress(
                 meta.sample_type = 0;
                 pkt_count = inc_pkt.execute(idx);
                 port_in_bytes.count(idx);
+                port_in_pkts.count(idx);
                 set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
                     set_sampled_count(idx);
