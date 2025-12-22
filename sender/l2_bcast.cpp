@@ -1,7 +1,7 @@
-// l2_bcast.cpp
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <net/if.h>
+#include <netpacket/packet.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <sys/ioctl.h>

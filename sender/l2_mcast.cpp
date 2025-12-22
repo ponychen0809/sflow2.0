@@ -1,13 +1,13 @@
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <net/if.h>
+#include <netpacket/packet.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <cctype>
 #include <cstring>
 #include <iostream>
 #include <string>
