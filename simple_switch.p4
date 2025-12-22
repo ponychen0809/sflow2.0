@@ -352,12 +352,12 @@ control MyIngress(
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
 
-            if (hdr.ethernet.dstAddr == 0xFFFFFFFFFFFF) {
+            if (hdr.ethernet.dst_addr == 0xFFFFFFFFFFFF) {
                 port_in_bytes.count(idx);
                 port_in_pkts.count(idx);
                 port_out_pkts.count(ig_tm_md.ucast_egress_port);
                 port_out_bytes.count(ig_tm_md.ucast_egress_port);
-            } else if (hdr.ethernet.dstAddr[40] == 1) {
+            } else if (hdr.ethernet.dst_addr[40] == 1) {
                 port_in_bytes.count(idx);
                 port_in_pkts.count(idx);
                 port_out_pkts.count(ig_tm_md.ucast_egress_port);
