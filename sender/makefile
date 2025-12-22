@@ -1,20 +1,21 @@
-# 指定編譯器
-CXX = g++
-# 指定編譯選項
-CXXFLAGS = -std=c++11 -Wall -g
-# 指定目標檔案名稱
-TARGET = sender
+CXX      := g++
+CXXFLAGS := -O2 -std=c++17 -Wall -Wextra
+LDFLAGS  :=
 
-# 預設目標
-all: $(TARGET)
+TARGETS := l2_bcast l2_mcast l2_ucast
 
-# 編譯 main.cpp 生成可執行檔
-$(TARGET): sender.cpp
-	$(CXX) $(CXXFLAGS) -o $(TARGET) sender.cpp
+all: $(TARGETS)
 
-# 清理編譯過程中產生的檔案
+l2_bcast: l2_bcast.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+
+l2_mcast: l2_mcast.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+
+l2_ucast: l2_ucast.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGETS) *.o
 
-# 如果沒有參數，執行 make 時會執行 all，使用 clean 時清除檔案
 .PHONY: all clean
