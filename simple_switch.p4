@@ -351,10 +351,25 @@ control MyIngress(
             hdr.sample.setValid();
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
-            port_in_bytes.count(idx);
-            port_in_pkts.count(idx);
-            port_out_pkts.count(ig_tm_md.ucast_egress_port);
-            port_out_bytes.count(ig_tm_md.ucast_egress_port);
+
+            if (hdr.ethernet.dstAddr == 0xFFFFFFFFFFFF) {
+                port_in_bytes.count(idx);
+                port_in_pkts.count(idx);
+                port_out_pkts.count(ig_tm_md.ucast_egress_port);
+                port_out_bytes.count(ig_tm_md.ucast_egress_port);
+            } else if (hdr.ethernet.dstAddr[40] == 1) {
+                port_in_bytes.count(idx);
+                port_in_pkts.count(idx);
+                port_out_pkts.count(ig_tm_md.ucast_egress_port);
+                port_out_bytes.count(ig_tm_md.ucast_egress_port);
+            } else {
+                port_in_bytes.count(idx);
+                port_in_pkts.count(idx);
+                port_out_pkts.count(ig_tm_md.ucast_egress_port);
+                port_out_bytes.count(ig_tm_md.ucast_egress_port);
+            }
+            
+            
             if(ig_intr_md.ingress_port == 320){
                 
                 set_counter_sample_hdr();
