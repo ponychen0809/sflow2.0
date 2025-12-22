@@ -188,7 +188,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             b = self.read_port_in_bytes(p)
 
             # ★ 每次讀到 counter 就印 index 與值
-            print("[counter] index={} bytes={}".format(p, b))
+            # print("[counter] index={} bytes={}".format(p, b))
 
             key = self.if_stats_tbl.make_key([
                 gc.KeyTuple("hdr.bridge.ingress_port", int(p))
@@ -437,34 +437,46 @@ class SimpleSwitchTest(BfRuntimeTest):
             Ether(dst="ff:ff:ff:ff:ff:ff", src="00:11:22:33:44:55") /
             IP(src="10.0.0.1", dst="10.0.0.2") /
             UDP(sport=1234, dport=5678) /
-            b"test"
+            "test"   # Python2: 用 str 就好，避免 b""
         )
 
         count = 0
         input("按 Enter 後開始每秒送封包到 PTF port 320...\n")
 
+        # 你要查的 counter index array
+        # 你可以在 config.json 放:
+        # "counter_indexes": [140,141,142]
+        index_list = self.cfg.get("counter_indexes", [140,141])
+
         while True:
             count += 1
 
-            # ---- NEW: before send_packet, read counter then write into if_stats_tbl ----
+            # 先把 if_stats_tbl 也更新（你原本就有）
             try:
-                # default update ports = [140], you can override via config:
-                #   "if_stats": {"ports":[140,143]}
                 ports = self.cfg.get("if_stats", {}).get("ports", [140])
                 self.update_if_stats_from_counter(ports)
-                pkts = self.read_port_in_pkts(140)
-                byt  = self.read_port_in_bytes(140)
-                print("[counter] index=140 pkts={} bytes={}".format(pkts, byt))
             except Exception as e:
                 print("[if_stats] read/update Error: {}".format(e))
 
-            print("{}, send_packet() to port 320".format(count))
-            tag32 = 140  # 或你想塞的值
+            # 每秒送出 len(index_list) 個封包
+            for idx in index_list:
+                try:
+                    pkts = self.read_port_in_pkts(idx)
+                    byt  = self.read_port_in_bytes(idx)
+                    print("[counter] index={} pkts={} bytes={}".format(idx, pkts, byt))
 
-            prefix = struct.pack("!I", tag32) +  struct.pack("!I", pkts) +  struct.pack("!I", byt)# network order 4 bytes
-            raw_pkt = prefix + bytes(pkt)        # Python2: str(pkt) 是 raw bytes
+                    # 4B idx + 4B pkts + 4B bytes (network order)
+                    prefix = struct.pack("!I", int(idx)) + struct.pack("!I", int(pkts)) + struct.pack("!I", int(byt))
 
-            send_packet(self, 320, raw_pkt)
+                    # Python2: str(pkt) 是 raw bytes；不要用 bytes(pkt)
+                    raw_pkt = prefix + str(pkt)
+
+                    print("{}, send_packet() to port 320 (idx={})".format(count, idx))
+                    send_packet(self, 320, raw_pkt)
+
+                except Exception as e:
+                    print("[counter] read/send Error (idx={}): {}".format(idx, e))
+
             time.sleep(1)
 
     def update_ts_every_second(self):
