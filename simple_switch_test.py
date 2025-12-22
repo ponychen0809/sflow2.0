@@ -70,6 +70,8 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
 
         # ---- NEW: counter + if_stats table (do not change other logic) ----
+        self.pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_in_pkts")
+
         self.port_in_bytes_tbl = self.bfrt_info.table_get("MyIngress.port_in_bytes")
         self.if_stats_tbl = self.bfrt_info.table_get("MyIngress.if_stats_tbl")
 
@@ -100,6 +102,45 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         while True:
             time.sleep(1)
+
+
+    # ----------------------------
+    # NEW: read pkts counter like CLI
+    #   bfrt...MyIngress.port_in_pkts get(COUNTER_INDEX=140)
+    #   key  : $COUNTER_INDEX
+    #   data : $COUNTER_SPEC_PKTS
+    # ----------------------------
+    def read_port_in_pkts(self, counter_index):
+        k = self.port_in_pkts_tbl.make_key([
+            gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
+        ])
+
+        try:
+            it = self.port_in_pkts_tbl.entry_get(self.dev_tgt, [k], {"from_hw": True})
+            for data, key in it:
+                d = data.to_dict()
+
+                val = d.get("$COUNTER_SPEC_PKTS", 0)
+
+                # Some BFRT versions may return nested dict for counter spec
+                if isinstance(val, dict):
+                    # try common keys
+                    if "packets" in val:
+                        return int(val.get("packets", 0))
+                    if "pkts" in val:
+                        return int(val.get("pkts", 0))
+                    if "$COUNTER_SPEC_PKTS" in val:
+                        return int(val.get("$COUNTER_SPEC_PKTS", 0))
+                    # fallback: first numeric value
+                    for _, vv in val.items():
+                        if isinstance(vv, (int, long)):
+                            return int(vv)
+
+                return int(val)
+            return 0
+        except Exception as e:
+            print("[counter] entry_get Error: {}".format(e))
+            return 0
 
     # ----------------------------
     # NEW: read counter like CLI
@@ -422,6 +463,9 @@ class SimpleSwitchTest(BfRuntimeTest):
                 #   "if_stats": {"ports":[140,143]}
                 ports = self.cfg.get("if_stats", {}).get("ports", [140])
                 self.update_if_stats_from_counter(ports)
+                pkts = self.read_port_in_pkts(140)
+                byt  = self.read_port_in_bytes(140)
+                print("[counter] index=140 pkts={} bytes={}".format(pkts, byt))
             except Exception as e:
                 print("[if_stats] read/update Error: {}".format(e))
 
