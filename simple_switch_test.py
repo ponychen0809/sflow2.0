@@ -459,14 +459,14 @@ class SimpleSwitchTest(BfRuntimeTest):
         for r in rules:
             in_p = int(r["ingress_port"])
             status = int(r["status"])
-            keys.append(self.port_sampling_tbl.make_key([gc.KeyTuple("ig_intr_md.ingress_port", in_p)]))
-            datas.append(self.port_sampling_tbl.make_data(
+            keys.append(self.agent_status.make_key([gc.KeyTuple("ig_intr_md.ingress_port", in_p)]))
+            datas.append(self.agent_status.make_data(
                 [gc.DataTuple("status", status)],
                 "MyIngress.set_agent_status"
             ))
 
         try:
-            self.port_sampling_tbl.entry_add(self.dev_tgt, keys, datas)
+            self.agent_status.entry_add(self.dev_tgt, keys, datas)
             print("[sampling] rules written: {}".format(len(rules)))
         except Exception as e:
             print("[sampling] Error: {}".format(e))
