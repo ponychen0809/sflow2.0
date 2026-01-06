@@ -94,7 +94,6 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.apply_mirror_cfg_from_cfg()
         self.apply_pre_from_cfg()
         self.apply_timestamp_from_cfg()
-        self.apply_agent_status_from_cfg()
 
         # threads
         t1 = threading.Thread(target=self.send_pkt_every_second)
@@ -467,9 +466,9 @@ class SimpleSwitchTest(BfRuntimeTest):
 
         try:
             self.agent_status.entry_add(self.dev_tgt, keys, datas)
-            print("[sampling] rules written: {}".format(len(rules)))
+            print("[agent_status] rules written: {}".format(len(rules)))
         except Exception as e:
-            print("[sampling] Error: {}".format(e))
+            print("[agent_status] Error: {}".format(e))
 
     # ----------------------------
     # apply: port agent (based on hdr.sample.ingress_port)
