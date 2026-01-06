@@ -319,11 +319,11 @@ control MyIngress(
         default_action = NoAction;
     }
     apply {
-        t_set_ts.apply();
+        t_set_ts.apply();  //更新timestamp
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         
 
-        if(ig_intr_md.ingress_port == 36){
+        if(ig_intr_md.ingress_port == 36){  //重recirc port進來，表示要做成sflow packet
             meta.sample_type = 1;
             hdr.ethernet.setValid();
             hdr.ipv4.setValid();
@@ -364,9 +364,8 @@ control MyIngress(
             port_in_bytes.count(idx);
             port_out_bytes.count(ig_tm_md.ucast_egress_port);
             bit<48> dmac = hdr.ethernet.dst_addr;
-            bit<32> dmac_hi = (bit<32>)(dmac >> 16);   // 上 32 bits
-            bit<16> dmac_lo = (bit<16>)(dmac);         // 下 16 bits
-            // 先取出 dst MAC 的第一個 byte（最左邊那個 byte）
+            bit<32> dmac_hi = (bit<32>)(dmac >> 16);   
+            bit<16> dmac_lo = (bit<16>)(dmac);         
             bit<8> dmac0 = (bit<8>)(dmac >> 40);
             if (dmac_hi == 32w0xFFFFFFFF) {
                 if (dmac_lo == 16w0xFFFF) {
