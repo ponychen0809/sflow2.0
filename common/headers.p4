@@ -189,8 +189,8 @@ struct my_metadata_t {
     bit<32> out_multi_count;
     bit<32> out_broad_count;
     bit<32> ucast_count;
-    bit<64> ifInOctets;
     bit<1024> raw_128_data;
+    bit<1> agent_status;
     bit<1>  recirc;
 }
 
