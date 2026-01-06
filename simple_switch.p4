@@ -328,7 +328,8 @@ control MyIngress(
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
         meta.agent_status = 0;
         agent_status.apply();
-        
+        ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
+
 
         if(ig_intr_md.ingress_port == 36){  //從recirc port進來，表示要做成flow sample packet
             meta.sample_type = 1;
@@ -408,7 +409,7 @@ control MyIngress(
         }        
         else if(meta.agent_status == 1){
             hdr.sample.setValid();
-            ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
+            // ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             port_in_bytes.count(idx);
             port_out_bytes.count(ig_tm_md.ucast_egress_port);
@@ -450,9 +451,6 @@ control MyIngress(
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
-        }else{
-            ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
-
         }
         
         

@@ -69,6 +69,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.port_sampling_tbl = self.bfrt_info.table_get("MyIngress.port_sampling_rate")
         self.port_agent_tbl = self.bfrt_info.table_get("MyIngress.set_port_agent")
         self.ts_tbl = self.bfrt_info.table_get("MyIngress.t_set_ts")
+        self.agent_status = self.bfrt_info.table_get("MyIngress.agent_status")
 
         # ---- NEW: counter + if_stats table (do not change other logic) ----
         self.port_in_ucast_pkts_tbl  = self.bfrt_info.table_get("MyIngress.port_in_ucast_pkts")
@@ -80,14 +81,12 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.port_in_bytes_tbl = self.bfrt_info.table_get("MyIngress.port_in_bytes")
         self.port_out_bytes_tbl = self.bfrt_info.table_get("MyIngress.port_out_bytes")
         
-        
-        self.if_stats_tbl = self.bfrt_info.table_get("MyIngress.if_stats_tbl")
-
         self.start_time = None
         self.cleanUp()
 
     def runTest(self):
         self.start_time = time.time()
+        self.apply_agent_status_from_cfg()
         self.apply_ports_from_cfg()
         self.apply_forwarding_from_cfg()
         self.apply_sampling_from_cfg()
@@ -95,6 +94,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         self.apply_mirror_cfg_from_cfg()
         self.apply_pre_from_cfg()
         self.apply_timestamp_from_cfg()
+        self.apply_agent_status_from_cfg()
 
         # threads
         t1 = threading.Thread(target=self.send_pkt_every_second)
@@ -142,6 +142,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         except Exception as e:
             print("[counter] entry_get Error: {}".format(e))
             return 0
+    
     def read_port_in_multi_pkts(self, counter_index):
         k = self.port_in_multi_pkts_tbl.make_key([
             gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
@@ -205,6 +206,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         except Exception as e:
             print("[counter] entry_get Error: {}".format(e))
             return 0
+    
     def read_port_out_ucast_pkts(self, counter_index):
         k = self.port_out_ucast_pkts_tbl.make_key([
             gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
@@ -236,6 +238,7 @@ class SimpleSwitchTest(BfRuntimeTest):
         except Exception as e:
             print("[counter] entry_get Error: {}".format(e))
             return 0
+    
     def read_port_out_multi_pkts(self, counter_index):
         k = self.port_out_multi_pkts_tbl.make_key([
             gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
@@ -300,12 +303,6 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("[counter] entry_get Error: {}".format(e))
             return 0
         
-    # ----------------------------
-    # NEW: read counter like CLI
-    #   bfrt...MyIngress.port_in_bytes get(COUNTER_INDEX=140)
-    #   key  : $COUNTER_INDEX
-    #   data : $COUNTER_SPEC_BYTES
-    # ----------------------------
     def read_port_in_bytes(self, counter_index):
         k = self.port_in_bytes_tbl.make_key([
             gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
@@ -336,13 +333,6 @@ class SimpleSwitchTest(BfRuntimeTest):
             print("[counter] entry_get Error: {}".format(e))
             return 0
 
-        
-    # ----------------------------
-    # NEW: read counter like CLI
-    #   bfrt...MyIngress.port_in_bytes get(COUNTER_INDEX=140)
-    #   key  : $COUNTER_INDEX
-    #   data : $COUNTER_SPEC_BYTES
-    # ----------------------------
     def read_port_out_bytes(self, counter_index):
         k = self.port_out_bytes_tbl.make_key([
             gc.KeyTuple("$COUNTER_INDEX", int(counter_index))
@@ -372,44 +362,6 @@ class SimpleSwitchTest(BfRuntimeTest):
         except Exception as e:
             print("[counter] entry_get Error: {}".format(e))
             return 0
-    # ----------------------------
-    # NEW: write counter bytes into if_stats_tbl
-    # - first time: entry_add
-    # - after that: entry_mod (avoid "Already exists")
-    # ----------------------------
-    def update_if_stats_from_counter(self, ports):
-        for p in ports:
-            b = self.read_port_in_bytes(p)
-
-            # ★ 每次讀到 counter 就印 index 與值
-            # print("[counter] index={} bytes={}".format(p, b))
-
-            key = self.if_stats_tbl.make_key([
-                gc.KeyTuple("hdr.bridge.ingress_port", int(p))
-            ])
-            data = self.if_stats_tbl.make_data(
-                [gc.DataTuple("ifInOctets", int(b))],
-                "MyIngress.set_if_stats"
-            )
-
-            wrote_ok = False
-            
-            # 先試著 mod
-            try:
-                self.if_stats_tbl.entry_mod(self.dev_tgt, [key], [data])
-                wrote_ok = True
-            except Exception as e_mod:
-                print("[if_stats] entry_mod Error: {}".format(e_mod))
-
-            # mod 不行才 add
-            if not wrote_ok:
-                try:
-                    self.if_stats_tbl.entry_add(self.dev_tgt, [key], [data])
-                    wrote_ok = True
-                except Exception as e_add:
-                    print("[if_stats] entry_add Error: {}".format(e_add))
-
-
     # ----------------------------
     # apply: ports
     # ----------------------------
@@ -486,6 +438,31 @@ class SimpleSwitchTest(BfRuntimeTest):
             datas.append(self.port_sampling_tbl.make_data(
                 [gc.DataTuple("sampling_rate", rate)],
                 "MyIngress.set_sampling_rate"
+            ))
+
+        try:
+            self.port_sampling_tbl.entry_add(self.dev_tgt, keys, datas)
+            print("[sampling] rules written: {}".format(len(rules)))
+        except Exception as e:
+            print("[sampling] Error: {}".format(e))
+    # ----------------------------
+    # apply: agent_status
+    # ----------------------------
+    def apply_agent_status_from_cfg(self):
+        rules = self.cfg.get("agent_status", [])
+        if not rules:
+            print("[agent_status] skip (no rules)")
+            return
+
+        keys = []
+        datas = []
+        for r in rules:
+            in_p = int(r["ingress_port"])
+            status = int(r["status"])
+            keys.append(self.port_sampling_tbl.make_key([gc.KeyTuple("ig_intr_md.ingress_port", in_p)]))
+            datas.append(self.port_sampling_tbl.make_data(
+                [gc.DataTuple("status", status)],
+                "MyIngress.set_agent_status"
             ))
 
         try:
@@ -639,13 +616,7 @@ class SimpleSwitchTest(BfRuntimeTest):
             port_to_addr = {r["ingress_port"]: r["agent_addr"] for r in rules}
             forward_rules = self.cfg.get("forwarding", [])
 
-            ingress_to_egress = {r["ingress_port"]: r["egress_port"] for r in forward_rules}
-            # 先把 if_stats_tbl 也更新（你原本就有）
-            try:
-                ports = self.cfg.get("if_stats", {}).get("ports", [140])
-                self.update_if_stats_from_counter(ports)
-            except Exception as e:
-                print("[if_stats] read/update Error: {}".format(e))
+            ingress_to_egress = {r["ingress_port"]: r["egress_port"] for r in forward_rules}            
 
             # 每秒送出 len(index_list) 個封包
             for idx in index_list:
