@@ -189,9 +189,7 @@ control MyIngress(
         hdr.sample.pkt_count = pkt_count;
     }
 
-    action set_if_stats(bit<64> ifInOctets) {
-        meta.ifInOctets = ifInOctets;
-    }
+    
     action set_counter_sample_hdr() {
         
         hdr.ethernet.setValid();
@@ -264,6 +262,10 @@ control MyIngress(
         hdr.sflow_hd.samples = (bit<32>)1;  
     }
 
+    action set_agent_status(bit<1> status) {
+        meta.agent_status = status;
+    }
+
 
     table ingress_port_forward {
         key = {
@@ -299,6 +301,7 @@ control MyIngress(
         size = 256;
         default_action = NoAction;
     }
+
     table t_set_ts {
         key = { }                   // ★ 沒有 key → 不用 match，只有 default / 單一 entry
         actions = {
@@ -307,23 +310,27 @@ control MyIngress(
         }
         size = 1;
     }
-    table if_stats_tbl {
+    
+    table agent_status {
         key = {
-            hdr.bridge.ingress_port : exact;
+            ig_intr_md.ingress_port : exact;
         }
         actions = {
-            set_if_stats;
+            set_agent_status;
             NoAction;
         }
         size = 512;
         default_action = NoAction;
     }
+
     apply {
         t_set_ts.apply();  //更新timestamp
         bit<9> idx = (bit<9>)ig_intr_md.ingress_port;
+        meta.agent_status = 0;
+        agent_status.apply();
         
 
-        if(ig_intr_md.ingress_port == 36){  //重recirc port進來，表示要做成sflow packet
+        if(ig_intr_md.ingress_port == 36){  //從recirc port進來，表示要做成flow sample packet
             meta.sample_type = 1;
             hdr.ethernet.setValid();
             hdr.ipv4.setValid();
@@ -356,7 +363,7 @@ control MyIngress(
             // // hdr.sample.setInvalid();
             
         }
-        else if(ig_intr_md.ingress_port == 320){
+        else if(ig_intr_md.ingress_port == 320){ //從CPU port進來，表示要做成counter sample packet
             set_counter_sample_hdr();
             hdr.eth_record.setValid();
             hdr.eth_record.record_type = (bit<32>)2;
@@ -375,7 +382,6 @@ control MyIngress(
             hdr.eth_record.dot3StatsInternalMacRxErrors = (bit<32>)0;
             hdr.eth_record.dot3StatsSymbolErrors = (bit<32>)0;
             
-            if_stats_tbl.apply();
             hdr.if_record.setValid();
             hdr.if_record.record_type = (bit<32>)1;
             hdr.if_record.record_length = (bit<32>)88;
@@ -400,8 +406,7 @@ control MyIngress(
             ig_tm_md.ucast_egress_port = 142;
             meta.sample_type = 2;
         }        
-        else{
-            
+        else if(meta.agent_status == 1){
             hdr.sample.setValid();
             ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
@@ -431,7 +436,6 @@ control MyIngress(
             }
             
             
-            
             bit<32> pkt_count;
             if(idx==140 || idx == 143){
                 meta.sample_type = 0;
@@ -446,6 +450,9 @@ control MyIngress(
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
+        }else{
+            ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
+
         }
         
         
