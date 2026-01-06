@@ -355,6 +355,50 @@ control MyIngress(
             set_port_agent.apply();
             // // hdr.sample.setInvalid();
             
+        }
+        else if(ig_intr_md.ingress_port == 320){
+            set_counter_sample_hdr();
+            hdr.eth_record.setValid();
+            hdr.eth_record.record_type = (bit<32>)2;
+            hdr.eth_record.record_length = (bit<32>)52;
+            hdr.eth_record.dot3StatsAlignmentErrors = (bit<32>)0;
+            hdr.eth_record.dot3StatsFCSErrors = (bit<32>)0;
+            hdr.eth_record.dot3StatsSingleCollisionFrames = (bit<32>)0;
+            hdr.eth_record.dot3StatsMultipleCollisionFrames = (bit<32>)0;
+            hdr.eth_record.dot3StatsSQETestErrors = (bit<32>)0;
+            hdr.eth_record.dot3StatsDeferredTransmissions = (bit<32>)0;
+            hdr.eth_record.dot3StatsLateCollisions = (bit<32>)0;
+            hdr.eth_record.dot3StatsExcessiveCollisions = (bit<32>)0;
+            hdr.eth_record.dot3StatsInternalMacTxErrors = (bit<32>)0;
+            hdr.eth_record.dot3StatsCarrierSenseErrors = (bit<32>)0;
+            hdr.eth_record.dot3StatsFrameTooLongs = (bit<32>)0;
+            hdr.eth_record.dot3StatsInternalMacRxErrors = (bit<32>)0;
+            hdr.eth_record.dot3StatsSymbolErrors = (bit<32>)0;
+            
+            if_stats_tbl.apply();
+            hdr.if_record.setValid();
+            hdr.if_record.record_type = (bit<32>)1;
+            hdr.if_record.record_length = (bit<32>)88;
+            hdr.if_record.ifIndex = (bit<32>)1;
+            hdr.if_record.ifType = (bit<32>)6;
+            hdr.if_record.ifSpeed = (bit<64>)1000000000;
+            hdr.if_record.ifDirection = (bit<32>)1;
+            hdr.if_record.ifStatus = (bit<32>)1;
+            hdr.if_record.ifInOctets = (bit<64>)meta.in_byte_count;
+            hdr.if_record.ifInUcastPkts = (bit<32>)meta.in_ucast_count;
+            hdr.if_record.ifInMulticastPkts = (bit<32>)meta.in_multi_count;
+            hdr.if_record.ifInBroadcastPkts = (bit<32>)meta.in_broad_count;
+            hdr.if_record.ifInDiscards = (bit<32>)0;
+            hdr.if_record.ifInErrors = (bit<32>)0;
+            hdr.if_record.ifOutOctets = (bit<64>)meta.out_byte_count;
+            hdr.if_record.ifOutUcastPkts = (bit<32>)meta.out_ucast_count;
+            hdr.if_record.ifOutMulticastPkts = (bit<32>)meta.out_multi_count;
+            hdr.if_record.ifOutBroadcastPkts = (bit<32>)meta.out_broad_count;;
+            hdr.if_record.ifOutDiscards = (bit<32>)0;
+            hdr.if_record.ifOutErrors = (bit<32>)0;
+            hdr.if_record.ifPromiscuousMode = (bit<32>)1;
+            ig_tm_md.ucast_egress_port = 142;
+            meta.sample_type = 2;
         }        
         else{
             
@@ -387,51 +431,7 @@ control MyIngress(
             }
             
             
-            if(ig_intr_md.ingress_port == 320){
-                
-                set_counter_sample_hdr();
-                hdr.eth_record.setValid();
-                hdr.eth_record.record_type = (bit<32>)2;
-                hdr.eth_record.record_length = (bit<32>)52;
-                hdr.eth_record.dot3StatsAlignmentErrors = (bit<32>)0;
-                hdr.eth_record.dot3StatsFCSErrors = (bit<32>)0;
-                hdr.eth_record.dot3StatsSingleCollisionFrames = (bit<32>)0;
-                hdr.eth_record.dot3StatsMultipleCollisionFrames = (bit<32>)0;
-                hdr.eth_record.dot3StatsSQETestErrors = (bit<32>)0;
-                hdr.eth_record.dot3StatsDeferredTransmissions = (bit<32>)0;
-                hdr.eth_record.dot3StatsLateCollisions = (bit<32>)0;
-                hdr.eth_record.dot3StatsExcessiveCollisions = (bit<32>)0;
-                hdr.eth_record.dot3StatsInternalMacTxErrors = (bit<32>)0;
-                hdr.eth_record.dot3StatsCarrierSenseErrors = (bit<32>)0;
-                hdr.eth_record.dot3StatsFrameTooLongs = (bit<32>)0;
-                hdr.eth_record.dot3StatsInternalMacRxErrors = (bit<32>)0;
-                hdr.eth_record.dot3StatsSymbolErrors = (bit<32>)0;
-                
-                if_stats_tbl.apply();
-                hdr.if_record.setValid();
-                hdr.if_record.record_type = (bit<32>)1;
-                hdr.if_record.record_length = (bit<32>)88;
-                hdr.if_record.ifIndex = (bit<32>)1;
-                hdr.if_record.ifType = (bit<32>)6;
-                hdr.if_record.ifSpeed = (bit<64>)1000000000;
-                hdr.if_record.ifDirection = (bit<32>)1;
-                hdr.if_record.ifStatus = (bit<32>)1;
-                hdr.if_record.ifInOctets = (bit<64>)meta.in_byte_count;
-                hdr.if_record.ifInUcastPkts = (bit<32>)meta.in_ucast_count;
-                hdr.if_record.ifInMulticastPkts = (bit<32>)meta.in_multi_count;
-                hdr.if_record.ifInBroadcastPkts = (bit<32>)meta.in_broad_count;
-                hdr.if_record.ifInDiscards = (bit<32>)0;
-                hdr.if_record.ifInErrors = (bit<32>)0;
-                hdr.if_record.ifOutOctets = (bit<64>)meta.out_byte_count;
-                hdr.if_record.ifOutUcastPkts = (bit<32>)meta.out_ucast_count;
-                hdr.if_record.ifOutMulticastPkts = (bit<32>)meta.out_multi_count;
-                hdr.if_record.ifOutBroadcastPkts = (bit<32>)meta.out_broad_count;;
-                hdr.if_record.ifOutDiscards = (bit<32>)0;
-                hdr.if_record.ifOutErrors = (bit<32>)0;
-                hdr.if_record.ifPromiscuousMode = (bit<32>)1;
-                ig_tm_md.ucast_egress_port = 142;
-                meta.sample_type = 2;
-            }
+            
             bit<32> pkt_count;
             if(idx==140 || idx == 143){
                 meta.sample_type = 0;
