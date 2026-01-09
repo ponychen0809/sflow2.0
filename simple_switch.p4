@@ -404,7 +404,7 @@ control MyIngress(
             hdr.if_record.ifOutDiscards = (bit<32>)0;
             hdr.if_record.ifOutErrors = (bit<32>)0;
             hdr.if_record.ifPromiscuousMode = (bit<32>)1;
-            ig_tm_md.ucast_egress_port = 142;
+            ig_tm_md.ucast_egress_port = 184;
             meta.sample_type = 2;
         }        
         else if(meta.agent_status == 1){
