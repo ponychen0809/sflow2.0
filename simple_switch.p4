@@ -439,7 +439,7 @@ control MyIngress(
             
             bit<32> pkt_count;
             if(idx==188 || idx == 189){
-                pkt_count = inc_pkt.execute(idx);
+                // pkt_count = inc_pkt.execute(idx);
                 
                 // set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
