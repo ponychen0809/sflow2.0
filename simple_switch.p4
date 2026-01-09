@@ -414,7 +414,7 @@ control MyIngress(
             meta.sample_type = 2;
         }      
         else if(meta.agent_status == 1){
-            // hdr.sample.setValid();
+            hdr.sample.setValid();
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             port_in_bytes.count(idx);
             port_out_bytes.count(ig_tm_md.ucast_egress_port);
@@ -453,6 +453,7 @@ control MyIngress(
                 ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                 meta.mirror_session = (bit<10>)26;
                 meta.tmp_sampling_rate = hdr.sample.sampling_rate;
+                
                 // hdr.sample.setValid();
                 meta.tmp_ingress_port = (bit<32>)ig_intr_md.ingress_port;
             }else{
