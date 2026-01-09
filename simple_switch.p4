@@ -447,7 +447,7 @@ control MyIngress(
             
             // set_pkt_count(idx);
             if(pkt_count==0){   //送往recirc port
-                ig_tm_md.ucast_egress_port = 184;
+                // ig_tm_md.ucast_egress_port = 184;
                 do_sample_action();
                 // set_sampled_count(idx);
                 // ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
