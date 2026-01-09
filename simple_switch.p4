@@ -438,7 +438,7 @@ control MyIngress(
             
             
             bit<32> pkt_count;
-            if(idx==188 || idx == 189){
+            // if(idx==188 || idx == 189){
                 // pkt_count = inc_pkt.execute(idx);
                 
                 // set_pkt_count(idx);
@@ -449,7 +449,7 @@ control MyIngress(
                     hdr.sample.setValid();
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
-            }
+            // }
         }
         
         
