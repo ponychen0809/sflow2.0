@@ -668,7 +668,7 @@ control MyEgress(
 
     apply {
 
-        if (eg_intr_md.egress_port == 32) {
+        if (eg_intr_md.egress_port == 32 && eg_md.do_sample == 1) {
             hdr.sample.setValid();
             hdr.sample.sampling_rate = eg_md.tmp_sampling_rate;
             hdr.sample.ingress_port = eg_md.tmp_ingress_port;
@@ -689,7 +689,7 @@ control MyEgressDeparser(
         in egress_intrinsic_metadata_for_deparser_t eg_intr_dprs_md) {
 
     apply {
-        // pkt.emit(hdr.sample);
+        pkt.emit(hdr.sample);
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
