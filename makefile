@@ -7,6 +7,7 @@ clear:
 	rm -rf __pycache__
 
 run:
+	git pull
 	~/p4_build.sh simple_switch.p4
 	${SDE}/run_switchd.sh -p simple_switch
 bfrt:
