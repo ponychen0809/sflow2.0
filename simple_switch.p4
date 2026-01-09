@@ -180,7 +180,7 @@ control MyIngress(
     action set_sampled_count(bit<9> idx) {
         bit<32> sampled_count;
         sampled_count = inc_sampled_pkt.execute(idx);
-        hdr.sample.sampled_count = sampled_count;
+        meta.tmp_sampled_count = sampled_count;
     }
 
     action set_pkt_count(bit<9> idx) {
@@ -449,13 +449,12 @@ control MyIngress(
             if(pkt_count==0){   //送往recirc port
                 // ig_tm_md.ucast_egress_port = 184;
                 
-                // set_sampled_count(idx);
+                set_sampled_count(idx);
                 ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                 meta.mirror_session = (bit<10>)26;
                 meta.tmp_sampling_rate = hdr.sample.sampling_rate;
-                
-                // hdr.sample.setValid();
                 meta.tmp_ingress_port = (bit<32>)ig_intr_md.ingress_port;
+                meta.do_sample = 0;
             }else{
                 hdr.sample.setInvalid();
             }
@@ -604,9 +603,9 @@ control MyIngressDeparser(packet_out pkt,
                 });
             }
         }
-        if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-            mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
-        }
+        // if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
+        //     mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
+        // }
         // hdr.sample.setInvalid();
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
@@ -668,13 +667,18 @@ control MyEgress(
     }
 
     apply {
-        // eg_intr_md.egress_port=39;
-    //     if (eg_intr_dprs_md.mirror_type !=0){
-    //         hdr.sample.setValid();
-    //         hdr.ethernet.src_addr = 0xaaaaaaaaaaaa;
-    //     }else{
-    //         hdr.sample.setInvalid();
-    //     }
+
+        if (eg_intr_md.egress_port == 32) {
+            hdr.sample.setValid();
+            hdr.sample.sampling_rate = eg_md.tmp_sampling_rate;
+            hdr.sample.ingress_port = eg_md.tmp_ingress_port;
+            hdr.sample.pkt_count = eg_md.tmp_pkt_count;
+            hdr.sample.sampled_count = eg_md.tmp_sampled_count;
+            // 其他 sFlow 相關欄位賦值...
+        } else {
+            // 正常的轉發流量走這裡，Header 保持無效
+            hdr.sample.setInvalid();
+        }
     }
 }
 
