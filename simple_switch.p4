@@ -668,17 +668,17 @@ control MyEgress(
 
     apply {
 
-        if (eg_intr_md.egress_port == 32 && eg_md.do_sample == 1) {
-            hdr.sample.setValid();
-            hdr.sample.sampling_rate = eg_md.tmp_sampling_rate;
-            hdr.sample.ingress_port = eg_md.tmp_ingress_port;
-            hdr.sample.pkt_count = eg_md.tmp_pkt_count;
-            hdr.sample.sampled_count = eg_md.tmp_sampled_count;
-            // 其他 sFlow 相關欄位賦值...
-        } else {
-            // 正常的轉發流量走這裡，Header 保持無效
-            hdr.sample.setInvalid();
-        }
+        // if (eg_intr_md.egress_port == 32 && eg_md.do_sample == 1) {
+        //     hdr.sample.setValid();
+        //     hdr.sample.sampling_rate = eg_md.tmp_sampling_rate;
+        //     hdr.sample.ingress_port = eg_md.tmp_ingress_port;
+        //     hdr.sample.pkt_count = eg_md.tmp_pkt_count;
+        //     hdr.sample.sampled_count = eg_md.tmp_sampled_count;
+        //     // 其他 sFlow 相關欄位賦值...
+        // } else {
+        //     // 正常的轉發流量走這裡，Header 保持無效
+        //     hdr.sample.setInvalid();
+        // }
     }
 }
 
@@ -689,7 +689,7 @@ control MyEgressDeparser(
         in egress_intrinsic_metadata_for_deparser_t eg_intr_dprs_md) {
 
     apply {
-        pkt.emit(hdr.sample);
+        // pkt.emit(hdr.sample);
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
