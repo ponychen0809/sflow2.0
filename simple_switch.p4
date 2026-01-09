@@ -438,10 +438,10 @@ control MyIngress(
             
             
             bit<32> pkt_count;
-            // if(idx==188 || idx == 189){
-                // pkt_count = inc_pkt.execute(idx);
+            if(idx==188 || idx == 189){
+                pkt_count = inc_pkt.execute(idx);
                 
-                // set_pkt_count(idx);
+                set_pkt_count(idx);
                 // if(pkt_count==0){   //送往recirc port
                 //     set_sampled_count(idx);
                 //     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
@@ -449,7 +449,7 @@ control MyIngress(
                 //     hdr.sample.setValid();
                 //     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 // }
-            // }
+            }
         }
         
         
