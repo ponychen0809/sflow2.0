@@ -597,7 +597,7 @@ control MyIngressDeparser(packet_out pkt,
             }
         }
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-            mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
+            mirror.emit<sample_t>(meta.mirror_session, {meta.sampleing_rate,meta.sampleing_rate,meta.sampleing_rate,meta.sampleing_rate});
         }
         // hdr.sample.setInvalid();
         pkt.emit(hdr.ethernet);
