@@ -246,7 +246,7 @@ control MyIngress(
         hdr.ipv4.ttl          = 64;
         hdr.ipv4.protocol     = 17; 
         hdr.ipv4.src_addr = 0x0a0a0308;
-        hdr.ipv4.dst_addr = 0x0a0a0303;
+        hdr.ipv4.dst_addr = 0x0a0a0af8;
         
         hdr.udp.src_port = (bit<16>)8888;
         hdr.udp.dst_port = (bit<16>)6343;
