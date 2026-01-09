@@ -438,7 +438,7 @@ control MyIngress(
             
             
             bit<32> pkt_count;
-            if(idx==140 || idx == 143){
+            if(idx==188 || idx == 189){
                 meta.sample_type = 0;
                 pkt_count = inc_pkt.execute(idx);
                 
