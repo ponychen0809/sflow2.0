@@ -12,7 +12,7 @@
 using namespace std;
 
 int main() {
-    string target_ip = "10.10.3.2";
+    string target_ip = "192.168.2.49";
     int target_port = 12345;
 
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
