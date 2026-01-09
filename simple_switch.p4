@@ -185,8 +185,8 @@ control MyIngress(
 
     action set_pkt_count(bit<9> idx) {
         bit<32> pkt_count;
-        pkt_count = inc_port_rx.execute(idx);
-        meta.pkt_count = pkt_count;
+        // pkt_count = inc_port_rx.execute(idx);
+        // meta.pkt_count = pkt_count;
     }
 
     
@@ -442,13 +442,13 @@ control MyIngress(
                 // hdr.sample.setValid();
                 pkt_count = inc_pkt.execute(idx);
                 
-                // set_pkt_count(idx);
+                set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
-                    // set_sampled_count(idx);
+                    set_sampled_count(idx);
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
                     hdr.sample.setValid();
-                    // hdr.sample.pkt_count = meta.pkt_count;
+                    hdr.sample.pkt_count = meta.pkt_count;
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }else{
                     hdr.sample.setInvalid();
