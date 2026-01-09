@@ -406,7 +406,7 @@ control MyIngress(
             hdr.if_record.ifPromiscuousMode = (bit<32>)1;
             ig_tm_md.ucast_egress_port = 184;
             meta.sample_type = 2;
-        }        
+        }      
         else if(meta.agent_status == 1){
             hdr.sample.setValid();
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
@@ -437,12 +437,11 @@ control MyIngress(
             
             
             bit<32> pkt_count;
-            if(idx==188 || idx == 189){
                 pkt_count = inc_pkt.execute(idx);
                 
                 // set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
-                            ig_tm_md.ucast_egress_port = 184;
+                    ig_tm_md.ucast_egress_port = 184;
 
                     // set_sampled_count(idx);
                     // ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
@@ -452,7 +451,7 @@ control MyIngress(
                 }else{
                     hdr.sample.setInvalid();
                 }
-            }
+
         }
         
         
