@@ -448,6 +448,8 @@ control MyIngress(
                     meta.mirror_session = (bit<10>)26;
                     // hdr.sample.setValid();
                     // hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
+                }else{
+                    hdr.sample.setInvalid();
                 }
             }
         }
