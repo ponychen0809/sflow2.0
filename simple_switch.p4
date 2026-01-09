@@ -442,7 +442,7 @@ control MyIngress(
                 // pkt_count = inc_pkt.execute(idx);
                 
                 // set_pkt_count(idx);
-                if(pkt_count==0){   //送往recirc port
+                if(pkt_count==2048){   //送往recirc port
                     set_sampled_count(idx);
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
