@@ -179,6 +179,10 @@ struct my_metadata_t {
     bit<32>  pkt_count;
     bit<32> sampled_count;
     bit<32> sample_type;
+    bit<32>  tmp_sampling_rate;
+    bit<32>  tmp_ingress_port;
+    bit<32>  tmp_pkt_count;
+    bit<32>  tmp_sampled_count;
     bit<32> cpu_ingress_port;
     bit<32> in_byte_count;
     bit<32> out_byte_count;
@@ -193,8 +197,6 @@ struct my_metadata_t {
     bit<1> agent_status;
     bit<1>  recirc;
 }
-
-
 
 header sflow_t {  //28byte
     bit<32> version;
