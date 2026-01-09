@@ -14,10 +14,8 @@
   ],
 
   "agent_status": [
-    { "ingress_port": 140, "status": 0 },
-    { "ingress_port": 141, "status": 0 },
-    { "ingress_port": 142, "status": 0 },
-    { "ingress_port": 143, "status": 0 }
+    { "ingress_port": 188, "status": 0 },
+    { "ingress_port": 189, "status": 0 }
   ],
 
   "sampling_rate": [
