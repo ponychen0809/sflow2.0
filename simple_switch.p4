@@ -442,7 +442,7 @@ control MyIngress(
                 // hdr.sample.setValid();
                 pkt_count = inc_pkt.execute(idx);
                 
-                set_pkt_count(idx);
+                // set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
                     // set_sampled_count(idx);
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
