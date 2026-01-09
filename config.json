@@ -4,31 +4,30 @@
     "fec": "BF_FEC_TYP_NONE",
     "autoneg": "PM_AN_FORCE_DISABLE",
     "enable": true,
-    "dev_ports": [140, 141, 142, 143, 32, 33, 34, 35, 36, 37, 38, 39]
+    "dev_ports": [188, 189, 32, 33, 34, 35, 36, 37, 38, 39]
   },
 
   "forwarding": [
-    { "ingress_port": 140, "egress_port": 141 },
-    { "ingress_port": 141, "egress_port": 140 },
-    { "ingress_port": 142, "egress_port": 143 },
-    { "ingress_port": 143, "egress_port": 142 }
+    { "ingress_port": 188, "egress_port": 189 },
+    { "ingress_port": 189, "egress_port": 188 }
+
   ],
 
   "agent_status": [
-    { "ingress_port": 140, "status": 1 },
+    { "ingress_port": 140, "status": 0 },
     { "ingress_port": 141, "status": 0 },
     { "ingress_port": 142, "status": 0 },
-    { "ingress_port": 143, "status": 1 }
+    { "ingress_port": 143, "status": 0 }
   ],
 
   "sampling_rate": [
-    { "ingress_port": 140, "rate": 99 },
-    { "ingress_port": 143, "rate": 49 }
+    { "ingress_port": 188, "rate": 99 },
+    { "ingress_port": 189, "rate": 49 }
   ],
 
   "port_agent": [
-    { "ingress_port": 140, "agent_addr": "0x0a0a0301", "agent_id": 1 },
-    { "ingress_port": 143, "agent_addr": "0x0a0a0302", "agent_id": 2 }
+    { "ingress_port": 188, "agent_addr": "0x0a0a0301", "agent_id": 1 },
+    { "ingress_port": 189, "agent_addr": "0x0a0a0302", "agent_id": 2 }
   ],
 
   "mirror_cfg": [
