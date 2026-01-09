@@ -442,6 +442,8 @@ control MyIngress(
                 
                 // set_pkt_count(idx);
                 if(pkt_count==0){   //送往recirc port
+                            ig_tm_md.ucast_egress_port = 184;
+
                     // set_sampled_count(idx);
                     // ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     // meta.mirror_session = (bit<10>)26;
@@ -609,9 +611,7 @@ control MyIngressDeparser(packet_out pkt,
         pkt.emit(hdr.sflow_counter);
         pkt.emit(hdr.eth_record);
         pkt.emit(hdr.if_record);
-        // if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
-        //     mirror.emit<sample_t>(meta.mirror_session,{(bit<32>)hdr.sample.sampling_rate, (bit<32>)hdr.sample.ingress_port });
-        // }
+
     }
 }
 
