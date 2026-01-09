@@ -408,7 +408,7 @@ control MyIngress(
             meta.sample_type = 2;
         }        
         else if(meta.agent_status == 1){
-            hdr.sample.setValid();
+            // hdr.sample.setValid();
             // ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             port_in_bytes.count(idx);
@@ -597,6 +597,7 @@ control MyIngressDeparser(packet_out pkt,
         if (ig_dprsr_md.mirror_type == MIRROR_TYPE_t.I2E) {
             mirror.emit<sample_t>(meta.mirror_session, hdr.sample);
         }
+        hdr.sample.setInvalid();
         pkt.emit(hdr.ethernet);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.tcp);
