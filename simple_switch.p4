@@ -172,7 +172,7 @@ control MyIngress(
         ig_tm_md.ucast_egress_port = port;
     }
     action set_sampling_rate(bit<32> sampling_rate) {
-        hdr.sample.sampling_rate=sampling_rate;
+        meta.tmp_sampling_rate=sampling_rate;
     }
     action set_ts(bit<32> ts) {
         meta.ctrl_ts = ts;          // 把 action 參數寫進 metadata
@@ -414,7 +414,7 @@ control MyIngress(
             meta.sample_type = 2;
         }      
         else if(meta.agent_status == 1){
-            hdr.sample.setValid();
+            // hdr.sample.setValid();
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             port_in_bytes.count(idx);
             port_out_bytes.count(ig_tm_md.ucast_egress_port);
