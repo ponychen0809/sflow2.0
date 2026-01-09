@@ -245,7 +245,7 @@ control MyIngress(
         hdr.ipv4.frag_offset  = 0; 
         hdr.ipv4.ttl          = 64;
         hdr.ipv4.protocol     = 17; 
-        hdr.ipv4.src_addr = 0x0a0a0308;
+        hdr.ipv4.src_addr = (bit<32>)agent_addr;
         hdr.ipv4.dst_addr = 0x0a0a0af8;
         
         hdr.udp.src_port = (bit<16>)8888;
@@ -337,7 +337,7 @@ control MyIngress(
             hdr.ipv4.setValid();
             hdr.udp.setValid();
             ig_dprsr_md.mirror_type  = 0;
-            ig_tm_md.ucast_egress_port = 142;
+            ig_tm_md.ucast_egress_port = 184;
 
             hdr.sflow_flow.setValid();
             hdr.sflow_flow.sample_type = (bit<32>)1;
