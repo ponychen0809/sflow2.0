@@ -197,7 +197,7 @@ control MyIngress(
         hdr.udp.setValid();     
         
         hdr.ethernet.src_addr = 0x001122334455;
-        hdr.ethernet.dst_addr = 0x001b21bcaad3;
+        hdr.ethernet.dst_addr = 0x000acd3b1842;
         hdr.ethernet.ether_type = 0x0800;
         hdr.ipv4.version=4;
         hdr.ipv4.ihl=0x45;
@@ -209,10 +209,10 @@ control MyIngress(
         hdr.ipv4.ttl          = 64;
         hdr.ipv4.protocol     = 17; 
         // hdr.ipv4.src_addr = 0x0a0a0308;
-        hdr.ipv4.dst_addr = 0x0a0a0303;
+        hdr.ipv4.dst_addr = 0x0a0a0af8;
         
         hdr.udp.src_port = (bit<16>)8888;
-        // hdr.udp.dst_port = (bit<16>)6343;
+        hdr.udp.dst_port = (bit<16>)6343;
         hdr.udp.hdr_length = (bit<16>)212;
 
         hdr.sflow_hd.setValid();

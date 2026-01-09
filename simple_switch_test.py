@@ -622,8 +622,8 @@ class SimpleSwitchTest(BfRuntimeTest):
                 addr = port_to_addr[idx]
                 ip = socket.inet_ntoa(struct.pack("!I", int(addr, 16)))
                 pkt = (
-                    Ether(dst="ff:ff:ff:ff:ff:ff", src="00:11:22:33:44:55") /
-                    IP(src=ip, dst="10.10.3.2") /
+                    Ether(dst="00:0a:cd:3b:18:42", src="00:11:22:33:44:55") /
+                    IP(src=ip, dst="10.10.10.248") /
                     UDP(sport=1234, dport=6343) /
                     "test"   # Python2: 用 str 就好，避免 b""
                 )
