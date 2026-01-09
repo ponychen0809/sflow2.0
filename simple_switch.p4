@@ -185,7 +185,7 @@ control MyIngress(
 
     action set_pkt_count(bit<9> idx) {
         bit<32> pkt_count;
-        hdr.sample.pkt_count = inc_port_rx.execute(idx);
+        // hdr.sample.pkt_count = inc_port_rx.execute(idx);
         // hdr.sample.pkt_count = pkt_count;
     }
 
