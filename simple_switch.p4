@@ -446,7 +446,7 @@ control MyIngress(
                     set_sampled_count(idx);
                     ig_dprsr_md.mirror_type = MIRROR_TYPE_t.I2E;
                     meta.mirror_session = (bit<10>)26;
-                    hdr.sample.setValid();
+                    // hdr.sample.setValid();
                     hdr.sample.ingress_port = (bit<32>)ig_intr_md.ingress_port;
                 }
             }
