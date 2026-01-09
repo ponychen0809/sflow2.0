@@ -408,7 +408,7 @@ control MyIngress(
             meta.sample_type = 2;
         }        
         else if(meta.agent_status == 1){
-            // hdr.sample.setValid();
+            hdr.sample.setValid();
             // ingress_port_forward.apply();  //根據 ingress port 決定往哪個 egress port 送
             port_sampling_rate.apply();   //根據 ingress port 設定 sampling rate
             port_in_bytes.count(idx);
