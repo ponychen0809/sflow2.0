@@ -19,8 +19,8 @@
   ],
 
   "sampling_rate": [
-    { "ingress_port": 188, "rate": 99 },
-    { "ingress_port": 189, "rate": 49 }
+    { "ingress_port": 188, "rate": 9 },
+    { "ingress_port": 189, "rate": 9 }
   ],
 
   "port_agent": [
