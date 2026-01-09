@@ -4,7 +4,7 @@
     "fec": "BF_FEC_TYP_NONE",
     "autoneg": "PM_AN_FORCE_DISABLE",
     "enable": true,
-    "dev_ports": [188, 189, 32, 33, 34, 35, 36, 37, 38, 39]
+    "dev_ports": [188, 189,184, 32, 33, 34, 35, 36, 37, 38, 39]
   },
 
   "forwarding": [
