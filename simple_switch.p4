@@ -454,7 +454,7 @@ control MyIngress(
                 meta.mirror_session = (bit<10>)26;
                 meta.tmp_sampling_rate = hdr.sample.sampling_rate;
                 meta.tmp_ingress_port = (bit<32>)ig_intr_md.ingress_port;
-                meta.do_sample = 0;
+                meta.do_sample = 1;
             }else{
                 hdr.sample.setInvalid();
             }
